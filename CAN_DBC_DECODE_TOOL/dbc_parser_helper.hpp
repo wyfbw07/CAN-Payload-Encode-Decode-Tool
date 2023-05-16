@@ -14,16 +14,18 @@
 class DbcParserHelper {
 
 protected:
-
+    
+    // Hex and Binary converter
+    std::string hexToBin(const std::string &s);
+    std::string binToHex(const std::string &s);
+    
 	// Removes the leading and trailing characters of a string
 	static std::string& trimLeadingAndTrailingChar(std::string& str, const char& toTrim);
 
 	// Separate a string into a vector of string using a char delimiter
 	static void splitWithDeliminators(const std::string& str,
-					  char delimiter, 
-					  std::vector<std::string>& elems);
-    // Hex and Binary converter
-    std::string hexToBin(const std::string &s);
-    std::string binToHex(const std::string &s);
+                                      char delimiter,
+					                  std::vector<std::string>& elems);
+
 };
 #endif
