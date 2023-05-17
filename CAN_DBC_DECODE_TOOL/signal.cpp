@@ -80,6 +80,7 @@ double Signal::getDecodedValue(std::string rawPayload){
     std::string concatenatedPayload;
     unsigned int payloadInDec; unsigned short bit;
     splitWithDeliminators(rawPayload, ',', payload);
+    
     if (byteOrder == ByteOrders::Motorola) {
         for (unsigned long i = 0; i < payload.size(); i++){
             concatenatedPayload += payload[i];
@@ -89,7 +90,7 @@ double Signal::getDecodedValue(std::string rawPayload){
             concatenatedPayload += payload[i];
         }
     }
-    // Reverse bit sequence in big-endian order
+    
     if (byteOrder == ByteOrders::Motorola) {
         std::string payloadInBin;
         payloadInBin = hexToBin(concatenatedPayload);
@@ -99,9 +100,12 @@ double Signal::getDecodedValue(std::string rawPayload){
     }else{
         bit = startBit;
     }
+    
     // Convert to DEC
+    
     std::istringstream converter(concatenatedPayload);
     converter >> std::hex >> payloadInDec;
+    
     // Decode
     int64_t result = 0;
     uint8_t *data = (uint8_t *)&payloadInDec;
@@ -115,6 +119,7 @@ double Signal::getDecodedValue(std::string rawPayload){
         }
         bit++;
     }
+
     if ((valueType == ValueTypes::Signed) && (result & (1ULL << (dataLength - 1)))) {
         result |= ~((1ULL << dataLength) - 1);
     }

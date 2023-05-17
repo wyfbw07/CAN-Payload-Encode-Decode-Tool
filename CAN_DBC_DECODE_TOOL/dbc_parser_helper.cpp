@@ -46,9 +46,9 @@ std::string DbcParserHelper::hexToBin(const std::string &s){
 // Convert a string that contains binary into hexadecimal
 std::string DbcParserHelper::binToHex(const std::string &s){
     std::string out;
-    for(uint i = 0; i < s.size(); i += 4){
+    for(unsigned int i = 0; i < s.size(); i += 4){
         int8_t n = 0;
-        for(uint j = i; j < i + 4; ++j){
+        for(unsigned int j = i; j < i + 4; ++j){
             n <<= 1;
             if(s[j] == '1')
                 n |= 1;

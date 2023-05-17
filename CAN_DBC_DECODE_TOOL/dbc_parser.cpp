@@ -50,7 +50,7 @@ void DbcParser::loadAndParseFromFile(std::istream& in) {
 // A returned bool is used to indicate whether parsing succeeds or not
 bool DbcParser::parse(const std::string& filePath) {
     // Get file path, open the file stream
-    std::ifstream dbcFile(filePath.c_str());
+    std::ifstream dbcFile(filePath.c_str(), std::ios::binary);
     if (dbcFile) {
         // Parse file content
         loadAndParseFromFile(dbcFile);

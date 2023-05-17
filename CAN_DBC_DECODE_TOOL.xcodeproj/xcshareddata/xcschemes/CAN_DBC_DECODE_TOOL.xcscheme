@@ -52,15 +52,15 @@
       </BuildableProductRunnable>
       <CommandLineArguments>
          <CommandLineArgument
-            argument = "/Users/wyfbw07/Downloads/Volvo/CANoe/Chapter_12/Source/Vehicle_System_Simulation/CANdb/VehicleSystem.dbc"
+            argument = "/Users/wyfbw07/Downloads/Volvo/CANoe/Chapter_10/Source/X-Vehicle/CANdb/XVehicle.dbc"
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "258"
+            argument = "336"
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "2d,ff,70,12,00,00,00,00"
+            argument = "D0,87"
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument

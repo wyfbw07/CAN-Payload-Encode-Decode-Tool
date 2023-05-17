@@ -54,7 +54,7 @@ std::istream& operator>>(std::istream& in, Message& msg) {
 std::unordered_map<std::string, double> Message::decode(std::string payload){
 	std::unordered_map<std::string, double> sigValues;
 	for (auto& it : signalsLibrary) {
-		sigValues.insert(std::pair(it.second.getName(), it.second.getDecodedValue(payload)));
+		sigValues.insert(std::make_pair(it.second.getName(), it.second.getDecodedValue(payload)));
 	}
 	return sigValues;
 }
