@@ -59,7 +59,7 @@ std::istream& operator>>(std::istream& in, Signal& sig) {
 	in >> sig.minValue;
 	in.ignore(1);
 	in >> sig.maxValue;
-    in.ignore(1);
+	in.ignore(1);
 	// Read unit, if there exist one
 	in >> rawString;
 	if (rawString != "\"\"") {
@@ -73,56 +73,47 @@ std::istream& operator>>(std::istream& in, Signal& sig) {
 	return in;
 }
 
-double Signal::getDecodedValue(std::string rawPayload){
-    
-    // Split and remove delimitors
-    std::vector<std::string> payload;
-    std::string concatenatedPayload;
-    unsigned int payloadInDec; unsigned short bit;
-    splitWithDeliminators(rawPayload, ',', payload);
-    
-    if (byteOrder == ByteOrders::Motorola) {
-        for (unsigned long i = 0; i < payload.size(); i++){
-            concatenatedPayload += payload[i];
-        }
-    }else{
-        for (unsigned long i = payload.size(); i-- > 0; ){
-            concatenatedPayload += payload[i];
-        }
-    }
-    
-    if (byteOrder == ByteOrders::Motorola) {
-        std::string payloadInBin;
-        payloadInBin = hexToBin(concatenatedPayload);
-        std::reverse(payloadInBin.begin(), payloadInBin.end());
-        concatenatedPayload = binToHex(payloadInBin);
-        bit = startBit - dataLength;
-    }else{
-        bit = startBit;
-    }
-    
-    // Convert to DEC
-    
-    std::istringstream converter(concatenatedPayload);
-    converter >> std::hex >> payloadInDec;
-    
-    // Decode
-    int64_t result = 0;
-    uint8_t *data = (uint8_t *)&payloadInDec;
-    for (int bitpos = 0; bitpos < dataLength; bitpos++) {
-        if (data[bit / 8] & (1 << (bit % 8))) {
-            if (byteOrder == ByteOrders::Intel) {
-                result |= (1ULL << bitpos);
-            } else {
-                result |= (1ULL << (dataLength - bitpos - 1));
-            }
-        }
-        bit++;
-    }
+double Signal::getDecodedValue(std::vector<std::string> rawPayload) {
 
-    if ((valueType == ValueTypes::Signed) && (result & (1ULL << (dataLength - 1)))) {
-        result |= ~((1ULL << dataLength) - 1);
-    }
-    return (double)result*factor + offset;
-    
+	// Split and remove delimitors
+	std::string concatenatedPayload;
+	unsigned int payloadInDec; unsigned short bit;
+	// Concatenate data bytes based on different byte order
+	if (byteOrder == ByteOrders::Motorola) {
+		for (unsigned long i = 0; i < rawPayload.size(); i++) {
+			concatenatedPayload += rawPayload[i];
+		}
+		std::string payloadInBin;
+		payloadInBin = hexToBin(concatenatedPayload);
+		std::reverse(payloadInBin.begin(), payloadInBin.end());
+		concatenatedPayload = binToHex(payloadInBin);
+		bit = startBit - dataLength;
+	}
+	else {
+		for (unsigned long i = rawPayload.size(); i-- > 0; ) {
+			concatenatedPayload += rawPayload[i];
+		}
+		bit = startBit;
+	}
+	// Convert to DEC
+	std::istringstream converter(concatenatedPayload);
+	converter >> std::hex >> payloadInDec;
+	// Decode
+	int64_t result = 0;
+	uint8_t* data = (uint8_t*)&payloadInDec;
+	for (int bitpos = 0; bitpos < dataLength; bitpos++) {
+		if (data[bit / 8] & (1 << (bit % 8))) {
+			if (byteOrder == ByteOrders::Intel) {
+				result |= (1ULL << bitpos);
+			}
+			else {
+				result |= (1ULL << (dataLength - bitpos - 1));
+			}
+		}
+		bit++;
+	}
+	if ((valueType == ValueTypes::Signed) && (result & (1ULL << (dataLength - 1)))) {
+		result |= ~((1ULL << dataLength) - 1);
+	}
+	return (double)result * factor + offset;
 }

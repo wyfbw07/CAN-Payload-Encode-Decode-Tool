@@ -14,10 +14,7 @@
 #include <iosfwd>
 #include <cstdint>
 #include <unordered_map>
-
 #include "signal.hpp"
-//#include "universal_typedefs.hpp"
-
 
 class Message : DbcParserHelper {
 
@@ -42,7 +39,7 @@ public:
 	std::uint32_t getId() const { return id; }
 	std::size_t getDlc() const { return dataLength; }
 	std::string getSenderNames() const { return senderName; }
-    std::unordered_map<std::string, Signal> getSignalsInfo() const { return signalsLibrary; }
+	std::unordered_map<std::string, Signal> getSignalsInfo() const { return signalsLibrary; }
 	// Used to decode messages
 	std::unordered_map<std::string, double> decode(std::string payload);
 
