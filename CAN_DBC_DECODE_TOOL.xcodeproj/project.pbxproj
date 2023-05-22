@@ -27,7 +27,6 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		D32E1C872A123298005B6B1B /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		D33919652A0A33A9002DD719 /* CAN_DBC_DECODE_TOOL */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = CAN_DBC_DECODE_TOOL; sourceTree = BUILT_PRODUCTS_DIR; };
 		D339196F2A0A342E002DD719 /* dbc_parser_helper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = dbc_parser_helper.cpp; sourceTree = "<group>"; };
 		D33919702A0A342E002DD719 /* message.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = message.cpp; sourceTree = "<group>"; };
@@ -79,7 +78,6 @@
 				D33919712A0A342E002DD719 /* message.hpp */,
 				D33919752A0A342E002DD719 /* signal.cpp */,
 				D33919772A0A342E002DD719 /* signal.hpp */,
-				D32E1C872A123298005B6B1B /* README.md */,
 			);
 			path = CAN_DBC_DECODE_TOOL;
 			sourceTree = "<group>";

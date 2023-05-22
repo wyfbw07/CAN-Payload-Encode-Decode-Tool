@@ -1,48 +1,106 @@
 # CAN_DBC_DECODE_TOOL
 
-## Usage
+## Build on macOS
 
-argv[1]:  DBC file address
+Open the .xcodeproj project file, hit Build (Cmd+B).
 
-argv[2]: Message ID in DEC
-
-argv[3]: Payload in HEX
-
-argv[4]: Signal Name
+Input arguments must be given upon run time:
+- argv[1]: DBC file address
+- argv[2]: Message ID in DEC
+- argv[3]: Payload in HEX
+- argv[4]: Signal Name
 
 ## Sample Usage
 
-### Sample usage 1:
+Not all input arguments must be provide to run. There are three use cases available.
 
-argv[1]: /Users/filelocation/XVehicle.dbc
+### Extract DBC File Info Only:
+
+By only providing the DBC file address, the program would parse and extract message and signals info in the file:
+- argv[1]: /Users/filelocation/XVehicle.dbc
 
 ### Sample usage 2:
 
-argv[1]: /Users/filelocation/XVehicle.dbc
-
-argv[2]: 336
-
-argv[3]: D0,87,F0
+Additionally a message ID in decimal and its payload can be provided:
+- argv[1]: /Users/filelocation/XVehicle.dbc
+- argv[2]: 336
+- argv[3]: D0,87,F0
 
 ### Sample usage 3:
 
-argv[1]: /Users/filelocation/XVehicle.dbc
+Lastly a signal name can be provided to filter out the decoded value of that signal:
+- argv[1]: /Users/filelocation/XVehicle.dbc
+- argv[2]: 336
+- argv[3]: D0,87,F0
+- argv[4]: EngineTemp
 
-argv[2]: 336
+## Function Calls
 
-argv[3]: D0,87,F0
+### Load and Parse DBC File
 
-argv[4]: EngineTemp
+	bool parse(const std::string& filePath);
 
+- Use: To load and parse a DBC file, given the file path in string
+- Returns: A bool to indicate whether parsing succeeds (true) or not (false)
 
-## Notes
+Sample usage of this function:
 
-Decode now checks input payload length, returns decode result, and no longer prints decoded information by default.
+	DbcParser dbcFile;
+	dbcFile.parse(argv[1]);
 
-To decode an entire message, call this function. The function will return an unordered map: <Signal name, decoded value>, where first is signal name, and second is the decoded value for each signal. 
+A instance of the class DbcParser must be created first, and use the parse function to load and parse the DBC file. All messages and signals info will then be stored.
 
-	 std::unordered_map<std::string, double> decode(uint32_t msgId, std::string payload);
+For message classes, these information will be stored: 
+- Message name
+- Message ID
+- Message size (payload length)
+- Transmitter name
+- A std::vector of Signal classes
 
-To decode an specific signal under one message, call this function. The function will return the decoded value for that signal.
+For signal classes, these information will be stored: 
+- Signal name
+- Signal unit
+- Signal start bit
+- Signal size (data length)
+- Factor
+- Offset
+- Maximum value
+- Minimum value
+- Byte order (* 0=big endian, 1=little endian *)
+- Value type (* +=unsigned, -=signed *)
+- Receivers (node name)
+
+### Print DBC File Info
+
+	void printDbcInfo();
+
+- Use: To display all message and signal info in the DBC File 
+- Returns: std::cout in terminal
+
+Sample usage of this function:
+
+	dbcFile.printDbcInfo();
+
+Use this function to display DBC file info once a DBC file is loaded and parsed. Messages and signals info would appear in terminal or Xcode debugger terminal.
+
+### Decode an Entire Message
+
+	std::unordered_map<std::string, double> decode(uint32_t msgId, std::string payload);
+	
+- Use: To decode an entire message
+- Returns: std::unordered_map<Signal name, decoded value>
+
+The function will return an unordered map: <Signal name, decoded value>, where first is signal name, and second is the decoded value for each signal. The function now checks input payload length, returns decode result, and no longer prints decoded information by default.
+
+### Decode a Specific Signal Under a Message
 
 	double decodeSignalOnRequest(uint32_t msgId, std::string payload, std::string msgName);
+
+- Use: To decode a specific signal under a message
+- Returns: double decodedValue
+
+To decode an specific signal under one message, call this function. The function will return the decoded value for that signal. The function now checks input payload length, returns decode result, and no longer prints decoded information by default.
+
+## Resources
+
+The following is the reference PDF for CAN bus  [DBC File Format Documentation](http://mcu.so/Microcontroller/Automotive/dbc-file-format-documentation_compress.pdf) Version 1.0.5 by Vector Informatik GmbH
