@@ -7,6 +7,7 @@
 
 #include <string>
 #include <sstream>
+#include <algorithm>
 #include "dbc_parser_helper.hpp"
 
  // Trim out the first and last character from a string
