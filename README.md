@@ -14,19 +14,19 @@ Input arguments must be given upon run time:
 
 Not all input arguments must be provide to run. There are three use cases available.
 
-### Extract DBC File Info Only:
+**Extract DBC File Info Only:**
 
 By only providing the DBC file address, the program would parse and extract message and signals info in the file:
 - argv[1]: /Users/filelocation/XVehicle.dbc
 
-### Sample usage 2:
+**Decode an Entire Message:**
 
 Additionally a message ID in decimal and its payload can be provided:
 - argv[1]: /Users/filelocation/XVehicle.dbc
 - argv[2]: 336
 - argv[3]: D0,87,F0
 
-### Sample usage 3:
+**Decode a Specific Signal Under a Message:**
 
 Lastly a signal name can be provided to filter out the decoded value of that signal:
 - argv[1]: /Users/filelocation/XVehicle.dbc
