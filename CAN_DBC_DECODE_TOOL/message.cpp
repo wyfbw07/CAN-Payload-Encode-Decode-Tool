@@ -12,13 +12,22 @@
 std::istream& operator>>(std::istream& in, Message& msg) {
 	// Read message ID
 	in >> msg.id;
-	// Read message name, and remove the extranious colon
-	std::string name;
-	in >> name;
-	if (!name.empty()) {
-		name.pop_back();
-	}
-	msg.name = name;
+	// Read message name
+    std::string name;
+    in >> name;
+    char lastCharOnName = name.back();
+    if (lastCharOnName == ':') {
+        // For old format, just remove the trailing colon
+        if (!name.empty()) {
+            name.pop_back();
+        }
+        msg.name = name;
+    }
+    else {
+        // For new format, read the name directly and let the stream consume the colon
+        msg.name = name;
+        in >> name;
+    }
 	// Read message data length
 	in >> msg.dataLength;
 	// Read message sender name

@@ -5,34 +5,38 @@
 Open the .xcodeproj project file, hit Build (Cmd+B).
 
 Input arguments must be given upon run time:
-- argv[1]: DBC file address
-- argv[2]: Message ID in DEC
-- argv[3]: Payload in HEX
-- argv[4]: Signal Name
+
+	- argv[1]: DBC file address
+	- argv[2]: Message ID in DEC
+	- argv[3]: Payload in HEX
+	- argv[4]: Signal Name
 
 ## Sample Usage
 
 Not all input arguments must be provide to run. There are three use cases available.
 
-**Extract DBC File Info Only:**
+- **Extract DBC File Info Only:**
 
-By only providing the DBC file address, the program would parse and extract message and signals info in the file:
-- argv[1]: /Users/filelocation/XVehicle.dbc
+		- argv[1]: /Users/filelocation/XVehicle.dbc
+		
+	By only providing the DBC file address, the program would parse and extract message and signals info in the file.
+	
+- **Decode an Entire Message:**
 
-**Decode an Entire Message:**
+		- argv[1]: /Users/filelocation/XVehicle.dbc
+		- argv[2]: 336
+		- argv[3]: D0,87,F0
+		
+	Additionally a message ID in decimal and its payload can be provided.
 
-Additionally a message ID in decimal and its payload can be provided:
-- argv[1]: /Users/filelocation/XVehicle.dbc
-- argv[2]: 336
-- argv[3]: D0,87,F0
+- **Decode a Specific Signal Under a Message:**
 
-**Decode a Specific Signal Under a Message:**
+		- argv[1]: /Users/filelocation/XVehicle.dbc
+		- argv[2]: 336
+		- argv[3]: D0,87,F0
+		- argv[4]: EngineTemp
 
-Lastly a signal name can be provided to filter out the decoded value of that signal:
-- argv[1]: /Users/filelocation/XVehicle.dbc
-- argv[2]: 336
-- argv[3]: D0,87,F0
-- argv[4]: EngineTemp
+	Lastly a signal name can be provided to filter out the decoded value of that signal:
 
 ## Function Calls
 
@@ -104,3 +108,8 @@ To decode an specific signal under one message, call this function. The function
 ## Resources
 
 The following is the reference PDF for CAN bus  [DBC File Format Documentation](http://mcu.so/Microcontroller/Automotive/dbc-file-format-documentation_compress.pdf) Version 1.0.5 by Vector Informatik GmbH
+
+## What's New
+
+- The program can parse DBC files of two different message definitions. However for now I don't know the underlying reason why Vector changed it for the new version. There's no documentation to refer to now.
+- Fix a bug that, for a given message ID to decode, the program doesn't check if it is a valid message present in the DBC file. This type of checking also applies to signals.

@@ -56,7 +56,6 @@ int main(int argc, char* argv[])
                     std::string payloadInHex;
                     iss2 >> msgId; iss3 >> payload;
                     dbcFile.decode(msgId, payload);
-                    
                 }
                     break;
                 case 5:
@@ -68,7 +67,8 @@ int main(int argc, char* argv[])
                     std::string payload;
                     std::string sigName;
                     iss2 >> msgId; iss3 >> payload; iss4 >> sigName;
-                    dbcFile.decodeSignalOnRequest(msgId, payload, sigName);
+                    double result = dbcFile.decodeSignalOnRequest(msgId, payload, sigName);
+                    std::cout << "Decoded signal value: " << result << std::endl;
                 }
                     break;
                 default:
