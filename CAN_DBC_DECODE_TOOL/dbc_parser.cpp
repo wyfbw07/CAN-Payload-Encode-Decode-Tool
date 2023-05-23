@@ -121,7 +121,7 @@ std::unordered_map<std::string, double> DbcParser::decode(uint32_t msgId, std::s
 }
 
 // If specific signal name is requested, decode all signals but only displays decoded value of the requested signal
-double DbcParser::decodeSignalOnRequest(uint32_t msgId, std::string payload, std::string msgName) {
+double DbcParser::decodeSignalOnRequest(uint32_t msgId, std::string payload, std::string sigName) {
     std::unordered_map<uint32_t, Message>::iterator data_itr_msg = messageLibrary.find(msgId);
     if (data_itr_msg == messageLibrary.end()) {
         std::cout << "No matching message found. Decaode failed. A NULL is returned.\n" << std::endl;
@@ -130,7 +130,7 @@ double DbcParser::decodeSignalOnRequest(uint32_t msgId, std::string payload, std
     else {
         std::unordered_map<std::string, double> result;
         result = messageLibrary[msgId].decode(payload);
-        std::unordered_map<std::string, double>::iterator data_itr_sig = result.find(msgName);
+        std::unordered_map<std::string, double>::iterator data_itr_sig = result.find(sigName);
         if (data_itr_sig == result.end()) {
             std::cout << "No matching signal found. Decaode failed. A NULL is returned.\n" << std::endl;
             return NULL;

@@ -24,7 +24,7 @@ public:
 	bool parse(const std::string& filePath);
 	// Decode
 	std::unordered_map<std::string, double> decode(uint32_t msgId, std::string payload);
-	double decodeSignalOnRequest(uint32_t msgId, std::string payload, std::string msgName);
+	double decodeSignalOnRequest(uint32_t msgId, std::string payload, std::string sigName);
 	// Print DBC Info
 	void printDbcInfo();
 
