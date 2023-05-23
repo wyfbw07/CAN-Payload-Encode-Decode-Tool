@@ -18,7 +18,7 @@ Not all input arguments must be provide to run. There are three use cases availa
 - **Extract DBC File Info Only:**
 
 		- argv[1]: /Users/filelocation/XVehicle.dbc
-		
+	
 	By only providing the DBC file address, the program would parse and extract message and signals info in the file.
 	
 - **Decode an Entire Message:**
@@ -26,7 +26,7 @@ Not all input arguments must be provide to run. There are three use cases availa
 		- argv[1]: /Users/filelocation/XVehicle.dbc
 		- argv[2]: 336
 		- argv[3]: D0,87,F0
-		
+	
 	Additionally a message ID in decimal and its payload can be provided.
 
 - **Decode a Specific Signal Under a Message:**
@@ -90,7 +90,7 @@ Use this function to display DBC file info once a DBC file is loaded and parsed.
 ### Decode an Entire Message
 
 	std::unordered_map<std::string, double> decode(uint32_t msgId, std::string payload);
-	
+
 - Use: To decode an entire message
 - Returns: std::unordered_map<Signal name, decoded value>
 
@@ -98,7 +98,7 @@ The function will return an unordered map: <Signal name, decoded value>, where f
 
 ### Decode a Specific Signal Under a Message
 
-	double decodeSignalOnRequest(uint32_t msgId, std::string payload, std::string msgName);
+	double decodeSignalOnRequest(uint32_t msgId, std::string payload, std::string sigName);
 
 - Use: To decode a specific signal under a message
 - Returns: double decodedValue
