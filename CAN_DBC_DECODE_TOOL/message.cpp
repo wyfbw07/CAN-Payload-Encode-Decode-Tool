@@ -7,6 +7,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <sstream>
 #include "message.hpp"
 
 std::istream& operator>>(std::istream& in, Message& msg) {
@@ -59,15 +60,21 @@ std::istream& operator>>(std::istream& in, Message& msg) {
 }
 
 // Create a hash table for all decoded signals
-std::unordered_map<std::string, double> Message::decode(std::string rawPayload) {
+std::unordered_map<std::string, double> Message::decode(unsigned char rawPayload[], unsigned short dlc) {
 	// Check input payload length
 	// If the length of the input payload is different than what is required by the DBC file,
 	// reject and fail the decode operation
-	std::vector<std::string> payload;
-	splitWithDeliminators(rawPayload, ',', payload);
-	if (payload.size() != dataLength) {
-		throw std::invalid_argument("The data length of the input payload does not match with DBC info. Decaode failed.\n");
-	}
+    if (dlc != dataLength) {
+        throw std::invalid_argument("The data length of the input payload does not match with DBC info. Decaode failed.\n");
+    }
+    // Convert each unsigned char into string
+    std::vector<std::string> payload;
+    for (unsigned short i = 0; i < dlc; i++){
+        std::ostringstream convertor;
+        convertor << std::hex << (0xFF & rawPayload[i]);
+        payload.push_back(convertor.str());
+    }
+    // Decode
 	std::unordered_map<std::string, double> sigValues;
 	for (auto& it : signalsLibrary) {
 		sigValues.insert(std::make_pair(it.second.getName(), it.second.getDecodedValue(payload)));

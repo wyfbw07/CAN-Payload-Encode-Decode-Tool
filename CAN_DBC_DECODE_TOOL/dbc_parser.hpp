@@ -23,8 +23,8 @@ public:
 	// A bool is used to indicate whether parsing succeeds or not
 	bool parse(const std::string& filePath);
 	// Decode
-	std::unordered_map<std::string, double> decode(uint32_t msgId, std::string payload);
-	double decodeSignalOnRequest(uint32_t msgId, std::string payload, std::string sigName);
+	std::unordered_map<std::string, double> decode(uint32_t msgId, unsigned char payLoad[], unsigned short dlc);
+	double decodeSignalOnRequest(uint32_t msgId, unsigned char payLoad[], unsigned short dlc, std::string sigName);
 	// Print DBC Info
 	void printDbcInfo();
 

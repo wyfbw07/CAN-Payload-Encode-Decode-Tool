@@ -41,7 +41,7 @@ public:
 	std::string getSenderNames() const { return senderName; }
 	std::unordered_map<std::string, Signal> getSignalsInfo() const { return signalsLibrary; }
 	// Used to decode messages
-	std::unordered_map<std::string, double> decode(std::string payload);
+	std::unordered_map<std::string, double> decode(unsigned char rawPayload[], unsigned short dlc);
 
 };
 #endif

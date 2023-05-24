@@ -103,14 +103,14 @@ void DbcParser::printDbcInfo() {
 }
 
 // If no specific signal name is requested, decode all signals by default
-std::unordered_map<std::string, double> DbcParser::decode(uint32_t msgId, std::string payload) {
+std::unordered_map<std::string, double> DbcParser::decode(uint32_t msgId, unsigned char payLoad[], unsigned short dlc) {
     std::unordered_map<uint32_t, Message>::iterator data_itr_msg = messageLibrary.find(msgId);
     std::unordered_map<std::string, double> result;
     if (data_itr_msg == messageLibrary.end()) {
         std::cout << "No matching message found. Decaode failed. An empty result is returned.\n" << std::endl;
     }
     else {
-        result = messageLibrary[msgId].decode(payload);
+        result = messageLibrary[msgId].decode(payLoad, dlc);
         // Print decoded message info
         // std::cout << "Decoded message[" << messageLibrary[msgId].getId() << "]: " << messageLibrary[msgId].getName() << std::endl;
         // for (auto& decodedSig : result) {
@@ -121,7 +121,7 @@ std::unordered_map<std::string, double> DbcParser::decode(uint32_t msgId, std::s
 }
 
 // If specific signal name is requested, decode all signals but only displays decoded value of the requested signal
-double DbcParser::decodeSignalOnRequest(uint32_t msgId, std::string payload, std::string sigName) {
+double DbcParser::decodeSignalOnRequest(uint32_t msgId, unsigned char payLoad[], unsigned short dlc, std::string sigName) {
     std::unordered_map<uint32_t, Message>::iterator data_itr_msg = messageLibrary.find(msgId);
     if (data_itr_msg == messageLibrary.end()) {
         std::cout << "No matching message found. Decaode failed. A NULL is returned.\n" << std::endl;
@@ -129,7 +129,7 @@ double DbcParser::decodeSignalOnRequest(uint32_t msgId, std::string payload, std
     }
     else {
         std::unordered_map<std::string, double> result;
-        result = messageLibrary[msgId].decode(payload);
+        result = messageLibrary[msgId].decode(payLoad, dlc);
         std::unordered_map<std::string, double>::iterator data_itr_sig = result.find(sigName);
         if (data_itr_sig == result.end()) {
             std::cout << "No matching signal found. Decaode failed. A NULL is returned.\n" << std::endl;
