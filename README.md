@@ -1,10 +1,14 @@
 # CAN_DBC_DECODE_TOOL
 
+
+
 ## Build on macOS
 
 Open the .xcodeproj project file, hit Build (Cmd+B).
 
 No arguments is required to run. Edit properties in main to use this tool.
+
+
 
 ## Sample Usage
 
@@ -100,10 +104,11 @@ Use this function to display DBC file info once a DBC file is loaded and parsed.
 ### Decode an Entire Message
 
 ```c++
-std::unordered_map<std::string, double> decode(unsigned char rawPayload[], unsigned short dlc);
+std::unordered_map<std::string, double> DbcParser::decode(uint32_t msgId, unsigned char payLoad[], unsigned short dlc);
 ```
 
 - Use: To decode an entire message
+- Input parameters: (Message ID in decimal, An array of message payload, Message size)
 - Returns: std::unordered_map<Signal name, decoded value>
 
 Sample usage of this function:
@@ -124,6 +129,7 @@ double DbcParser::decodeSignalOnRequest(uint32_t msgId, unsigned char payLoad[],
 ```
 
 - Use: To decode a specific signal under a message
+- Input parameters: (Message ID in decimal, An array of message payload, Message size, Signal name)
 - Returns: A decoded value of type double
 
 Sample usage of this function:
