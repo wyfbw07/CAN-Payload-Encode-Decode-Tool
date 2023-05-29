@@ -49,7 +49,7 @@ std::istream& operator>>(std::istream& in, Message& msg) {
 		}
 		else {
 			// Uniqueness check failed, then something must be wrong with the DBC file, parse failed
-			throw std::invalid_argument("Signal \"" + sig.getName() + "\" has duplicates in the same message. Parse Failed.\n");
+			throw std::invalid_argument("Signal \"" + sig.getName() + "\" has duplicates in the same message. Parse Failed.");
 		}
 		// Update stream position after each signal read
 		posBeforePeek = in.tellg();
@@ -65,7 +65,7 @@ std::unordered_map<std::string, double> Message::decode(unsigned char rawPayload
 	// If the length of the input payload is different than what is required by the DBC file,
 	// reject and fail the decode operation
     if (dlc != dataLength) {
-        throw std::invalid_argument("The data length of the input payload does not match with DBC info. Decaode failed.\n");
+        throw std::invalid_argument("The data length of the input payload does not match with DBC info. Decode failed.");
     }
     // Convert each unsigned char into string
     std::vector<std::string> payload;
@@ -80,4 +80,18 @@ std::unordered_map<std::string, double> Message::decode(unsigned char rawPayload
 		sigValues.insert(std::make_pair(it.second.getName(), it.second.getDecodedValue(payload)));
 	}
 	return sigValues;
+}
+
+std::istream& Message::parseSignalValueDescription(std::istream& in) {
+    // Search for corresponding signal to parse the value descriptions
+    std::string sigName;
+    in >> sigName;
+    signalsLibrary_iterator signals_itr = signalsLibrary.find(sigName);
+    if (signals_itr != signalsLibrary.end()) {
+        signals_itr->second.parseSignalValueDescription(in);
+    }
+    else {
+        throw std::invalid_argument("Cannot find signal: " + name + ". Parse failed.");
+    }
+    return in;
 }

@@ -19,6 +19,7 @@
 class Message : DbcParserHelper {
 
 	typedef std::vector<Signal*> signals_t;
+    typedef std::unordered_map<std::string, Signal>::iterator signalsLibrary_iterator;
 	// Name of the Message
 	std::string name{};
 	// The CAN-ID assigned to this specific Message
@@ -40,6 +41,8 @@ public:
 	std::size_t getDlc() const { return dataLength; }
 	std::string getSenderNames() const { return senderName; }
 	std::unordered_map<std::string, Signal> getSignalsInfo() const { return signalsLibrary; }
+    // Parse signal value descrption
+    std::istream& parseSignalValueDescription(std::istream& in);
 	// Used to decode messages
 	std::unordered_map<std::string, double> decode(unsigned char rawPayload[], unsigned short dlc);
 

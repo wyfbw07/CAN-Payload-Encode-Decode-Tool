@@ -46,12 +46,16 @@ public:
 	ValueTypes getValueTypes() const { return valueType; }
 	// Get names of all the nodes that receives this signal
 	std::vector<std::string> getReceiversName() const { return receiversName; }
+    // Decode payload for the signal
 	double getDecodedValue(std::vector<std::string> rawPayload);
+    // Parse signal value descrption
+    std::istream& parseSignalValueDescription(std::istream& in);
 	// Operator overload, allows parsing of signals info
 	friend std::istream& operator>>(std::istream& in, Signal& sig);
 
 private:
 
+    typedef std::unordered_map<double, std::string>::iterator valueDescriptions_iterator;
 	// Name of the signal
 	std::string name{};
 	// Represents the physical unit of the signal, which is a string type
@@ -74,13 +78,18 @@ private:
 	ValueTypes valueType = ValueTypes::NotSet;
 	// Names of all the nodes that receives this signal
 	std::vector<std::string> receiversName{};
+    // Signal value descriptions: define encodings for specific signal raw values
+    std::unordered_map<double, std::string> valueDescriptions;
 	// Helper functions that are essential to parsing
-	std::string& trimLeadingAndTrailingChar(std::string& str, const char& toTrim) {
-		return DbcParserHelper::trimLeadingAndTrailingChar(str, toTrim);
-	}
-	void splitWithDeliminators(const std::string& str, char delimiter, std::vector<std::string>& elems) {
+    std::vector<std::string>& splitWithDeliminators(const std::string& str,
+                                                    char delimiter,
+                                                    std::vector<std::string>& elems) {
 		DbcParserHelper::splitWithDeliminators(str, delimiter, elems);
+        return elems;
 	}
+    std::string& trimLeadingAndTrailingChar(std::string& str, const char& toTrim) {
+        return DbcParserHelper::trimLeadingAndTrailingChar(str, toTrim);
+    }
 	std::string binToHex(const std::string& s) {
 		return DbcParserHelper::binToHex(s);
 	}

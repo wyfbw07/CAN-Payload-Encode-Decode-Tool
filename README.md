@@ -52,17 +52,23 @@ Not all input arguments must be provide to run. There are three use cases availa
 
 ### Load and Parse DBC File
 
-	bool parse(const std::string& filePath);
+```c++
+bool parse(const std::string& filePath);
+```
 
 - Use: To load and parse a DBC file, given the file path in string
 - Returns: A bool to indicate whether parsing succeeds (true) or not (false)
 
 Sample usage of this function:
 
-	DbcParser dbcFile;
-	dbcFile.parse("/Users/filelocation/XVehicle.dbc");
+```c++
+DbcParser dbcFile;
+dbcFile.parse("/Users/filelocation/XVehicle.dbc");
+```
 
 A instance of the class DbcParser must be created first, and use the parse function to load and parse the DBC file. All messages and signals info will then be stored.
+
+*<u>This function can be called only once.</u>* Currently it does not allow repeated calls of this function. Typically there is little use cases that you would want to re-parse the file. However if you do want to re-parse, destroy the existing class instance and create a new one to parse again.
 
 For message classes, these information will be stored: 
 - Message name
@@ -83,19 +89,24 @@ For signal classes, these information will be stored:
 - Byte order (* 0=big endian, 1=little endian *)
 - Value type (* +=unsigned, -=signed *)
 - Receivers (node name)
+- Signal value descriptions
 
 
 
 ### Print DBC File Info
 
-	void printDbcInfo();
+```c++
+void printDbcInfo();
+```
 
 - Use: To display all message and signal info in the DBC File 
 - Returns: std::cout in terminal
 
 Sample usage of this function:
 
-	dbcFile.printDbcInfo();
+```c++
+dbcFile.printDbcInfo();
+```
 
 Use this function to display DBC file info once a DBC file is loaded and parsed. Messages and signals info would appear in terminal or Xcode debugger terminal.
 
@@ -153,4 +164,5 @@ Here is the reference PDF for CAN bus [DBC File Format Documentation](http://mcu
 
 - Input arguments are no longer required upon running
 - The type of the input payload in decode functions are now changed to an fixed sized array of unsigned char, with an addition of the payload length called dlc.
+- The parser now parses signal value descriptions.
 

@@ -17,14 +17,15 @@ std::string& DbcParserHelper::trimLeadingAndTrailingChar(std::string& str, const
 }
 
 // Split a string into separate elements and store it into a vector
-void DbcParserHelper::splitWithDeliminators(const std::string& str,
-											char delim,
-											std::vector<std::string>& elems) {
+std::vector<std::string>& DbcParserHelper::splitWithDeliminators(const std::string& str,
+                                                                 char delim,
+                                                                 std::vector<std::string>& elems) {
 	std::stringstream tempStream(str);
 	std::string item;
 	while (std::getline(tempStream, item, delim)) {
 		elems.push_back(item);
 	}
+    return elems;
 }
 
 // Convert a string that contains hexadeciaml into binary

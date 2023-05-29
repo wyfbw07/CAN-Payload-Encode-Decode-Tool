@@ -10,10 +10,10 @@
 
 #include <iosfwd>
 #include <string>
+#include <sstream>
 #include <vector>
 #include <unordered_map>
 #include "message.hpp"
-
 
 class DbcParser {
 
@@ -30,6 +30,7 @@ public:
 
 private:
 
+    typedef std::unordered_map<uint32_t, Message>::iterator messageLibrary_iterator;
 	// A bool to indicate whether DBC file has been loaded or not
 	bool emptyLibrary = true;
 	// This list contains all the messages which got parsed from the DBC-File

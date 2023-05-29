@@ -40,7 +40,7 @@ int main(int argc, char* argv[])
         }
     }
     catch (std::invalid_argument& err) {
-        std::cout << "Exception catched: "<< err.what();
+        std::cout << "Exception catched: "<< err.what() << '\n';
     }
     std::cout << "--------------END--------------" << std::endl;
     return 0;

@@ -5,6 +5,7 @@
  *      Author: Yifan Wang
  */
 
+#include <iomanip>
 #include <fstream>
 #include <iostream>
 #include <string>
@@ -35,7 +36,7 @@ std::istream& operator>>(std::istream& in, Signal& sig) {
 		sig.byteOrder = ByteOrders::Intel;
 	}
 	else {
-		throw std::invalid_argument("Unable to parse byte order of signal: " + sig.name + "\n");
+		throw std::invalid_argument("Unable to parse byte order of signal: " + sig.name + ". Parse failed.");
 	}
 	// Read value type
 	char rawChar;
@@ -47,7 +48,7 @@ std::istream& operator>>(std::istream& in, Signal& sig) {
 		sig.valueType = ValueTypes::Signed;
 	}
 	else {
-		throw std::invalid_argument("Unable to parse value type of signal: " + sig.name + "\n");
+		throw std::invalid_argument("Unable to parse value type of signal: " + sig.name + ". Parse failed.");
 	}
 	// Read factor and offset
 	in.ignore(2);
@@ -101,8 +102,10 @@ double Signal::getDecodedValue(std::vector<std::string> rawPayload) {
 	// Decode
 	int64_t result = 0;
 	uint8_t* data = (uint8_t*)&payloadInDec;
+    // Access the corresponding byte and make sure we are reading a bit that is 1
 	for (int bitpos = 0; bitpos < dataLength; bitpos++) {
 		if (data[bit / 8] & (1 << (bit % 8))) {
+            // Add dominant bit
 			if (byteOrder == ByteOrders::Intel) {
 				result |= (1ULL << bitpos);
 			}
@@ -116,4 +119,26 @@ double Signal::getDecodedValue(std::vector<std::string> rawPayload) {
 		result |= ~((1ULL << dataLength) - 1);
 	}
 	return (double)result * factor + offset;
+}
+
+std::istream& Signal::parseSignalValueDescription(std::istream& in) {
+    std::string preamble;
+    // Parse signal value descriptions unitl hit the end of the line
+    while (in >> preamble && preamble != ";") {
+        // Get description for each signal value
+        double sigValue = std::stod(preamble);
+        std::string rawDescription;
+        // Remove double quotes
+        in >> std::quoted(rawDescription);
+        // Uniqueness check
+        valueDescriptions_iterator description_itr = valueDescriptions.find(sigValue);
+        if (description_itr == valueDescriptions.end()) {
+            // Store signal value description
+            valueDescriptions.insert(std::make_pair(sigValue, rawDescription));
+        }
+        else {
+            throw std::invalid_argument("Found duplicated value description of signal: " + name + ". Parse failed.");
+        }
+    }
+    return in;
 }
