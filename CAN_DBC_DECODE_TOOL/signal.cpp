@@ -14,7 +14,6 @@
 #include "signal.hpp"
 
 std::istream& operator>>(std::istream& in, Signal& sig) {
-
 	// Read signal name
 	in >> sig.name;
 	// A deliminator that is useless
@@ -23,10 +22,10 @@ std::istream& operator>>(std::istream& in, Signal& sig) {
 	// Read start bit, signal size, byte order and value type 
 	in >> sig.startBit;
 	in.ignore(1);
-	in >> sig.dataLength;
+	in >> sig.signalSize;
 	in.ignore(1);
 	// Read signal byte order
-	int rawByteOrderValue;
+	short rawByteOrderValue;
 	in >> rawByteOrderValue;
 	// 0=big endian, 1=little endian
 	if (rawByteOrderValue == 0) {
@@ -75,20 +74,18 @@ std::istream& operator>>(std::istream& in, Signal& sig) {
 }
 
 double Signal::getDecodedValue(std::vector<std::string> rawPayload) {
-
 	// Split and remove delimitors
 	std::string concatenatedPayload;
-	unsigned int payloadInDec; unsigned short bit;
+	unsigned int payload; unsigned short bit;
 	// Concatenate data bytes based on different byte order
 	if (byteOrder == ByteOrders::Motorola) {
 		for (unsigned long i = 0; i < rawPayload.size(); i++) {
 			concatenatedPayload += rawPayload[i];
 		}
-		std::string payloadInBin;
-		payloadInBin = hexToBin(concatenatedPayload);
-		std::reverse(payloadInBin.begin(), payloadInBin.end());
-		concatenatedPayload = binToHex(payloadInBin);
-		bit = startBit - dataLength;
+        concatenatedPayload = hexToBin(concatenatedPayload);
+        std::reverse(concatenatedPayload.begin(), concatenatedPayload.end());
+        concatenatedPayload = binToHex(concatenatedPayload);
+		bit = startBit - signalSize;
 	}
 	else {
 		for (unsigned long i = rawPayload.size(); i-- > 0; ) {
@@ -98,27 +95,27 @@ double Signal::getDecodedValue(std::vector<std::string> rawPayload) {
 	}
 	// Convert to DEC
 	std::istringstream converter(concatenatedPayload);
-	converter >> std::hex >> payloadInDec;
+	converter >> std::hex >> payload;
 	// Decode
-	int64_t result = 0;
-	uint8_t* data = (uint8_t*)&payloadInDec;
+	int64_t decodedResult = 0;
+	uint8_t* data = (uint8_t*)&payload;
     // Access the corresponding byte and make sure we are reading a bit that is 1
-	for (int bitpos = 0; bitpos < dataLength; bitpos++) {
+	for (int bitpos = 0; bitpos < signalSize; bitpos++) {
 		if (data[bit / 8] & (1 << (bit % 8))) {
             // Add dominant bit
 			if (byteOrder == ByteOrders::Intel) {
-				result |= (1ULL << bitpos);
+				decodedResult |= (1ULL << bitpos);
 			}
 			else {
-				result |= (1ULL << (dataLength - bitpos - 1));
+				decodedResult |= (1ULL << (signalSize - bitpos - 1));
 			}
 		}
 		bit++;
 	}
-	if ((valueType == ValueTypes::Signed) && (result & (1ULL << (dataLength - 1)))) {
-		result |= ~((1ULL << dataLength) - 1);
+	if ((valueType == ValueTypes::Signed) && (decodedResult & (1ULL << (signalSize - 1)))) {
+		decodedResult |= ~((1ULL << signalSize) - 1);
 	}
-	return (double)result * factor + offset;
+	return (double)decodedResult * factor + offset;
 }
 
 std::istream& Signal::parseSignalValueDescription(std::istream& in) {

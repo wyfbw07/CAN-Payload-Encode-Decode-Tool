@@ -40,7 +40,7 @@ public:
 	double getMaxValue() const { return maxValue; }
 	// Get start bit and data length
 	unsigned short getStartBit() const { return startBit; }
-	unsigned short getDataLength() const { return dataLength; }
+	unsigned short getDataLength() const { return signalSize; }
 	// Get byte order: Intel (little-endian) or Motorola (Big-endian)
 	ByteOrders getByteOrder() const { return byteOrder; }
 	ValueTypes getValueTypes() const { return valueType; }
@@ -69,9 +69,9 @@ private:
 	double maxValue{};
 	double minValue{};
 	// Signal start bit
-	unsigned short startBit{};
-	// Total signal length
-	unsigned short dataLength{};
+	unsigned int startBit{};
+	// The signal_size specifies the size of the signal in bits
+	unsigned int signalSize{};
 	// Byte order can be either Intel (little-endian) or Motorola (Big-endian)
 	ByteOrders byteOrder = ByteOrders::NotSet;
 	// Value order can be either unsigned or signed

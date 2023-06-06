@@ -42,7 +42,7 @@ void DbcParser::loadAndParseFromFile(std::istream& in) {
             // There are two types of value descriptions: Environment variable value descriptions and Signal value descriptions
             // Signal value descriptions define encodings for specific signal raw values.
             // The value descriptions for environment variables provide textual representations of specific values of the variable.
-            uint32_t messageId;
+            unsigned int messageId;
             in >> messageId;
             if (messageId != 0) {
                 // If there exists a message ID, this is a signal value description
@@ -120,7 +120,7 @@ void DbcParser::printDbcInfo() {
 }
 
 // If no specific signal name is requested, decode all signals by default
-std::unordered_map<std::string, double> DbcParser::decode(uint32_t msgId, unsigned char payLoad[], unsigned short dlc) {
+std::unordered_map<std::string, double> DbcParser::decode(unsigned int msgId, unsigned char payLoad[], unsigned int dlc) {
     messageLibrary_iterator data_itr_msg = messageLibrary.find(msgId);
     std::unordered_map<std::string, double> result;
     if (data_itr_msg == messageLibrary.end()) {
@@ -138,7 +138,7 @@ std::unordered_map<std::string, double> DbcParser::decode(uint32_t msgId, unsign
 }
 
 // If specific signal name is requested, decode all signals but only displays decoded value of the requested signal
-double DbcParser::decodeSignalOnRequest(uint32_t msgId, unsigned char payLoad[], unsigned short dlc, std::string sigName) {
+double DbcParser::decodeSignalOnRequest(unsigned int msgId, unsigned char payLoad[], unsigned int dlc, std::string sigName) {
     messageLibrary_iterator data_itr_msg = messageLibrary.find(msgId);
     if (data_itr_msg == messageLibrary.end()) {
         std::cout << "No matching message found. Decaode failed. A NULL is returned.\n" << std::endl;

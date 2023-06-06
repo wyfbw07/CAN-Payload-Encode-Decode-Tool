@@ -69,15 +69,15 @@
 		D33919672A0A33A9002DD719 /* CAN_DBC_DECODE_TOOL */ = {
 			isa = PBXGroup;
 			children = (
+				D33919742A0A342E002DD719 /* main.cpp */,
+				D33919762A0A342E002DD719 /* dbc_parser.hpp */,
+				D33919722A0A342E002DD719 /* dbc_parser.cpp */,
 				D33919732A0A342E002DD719 /* dbc_parser_helper.hpp */,
 				D339196F2A0A342E002DD719 /* dbc_parser_helper.cpp */,
-				D33919722A0A342E002DD719 /* dbc_parser.cpp */,
-				D33919762A0A342E002DD719 /* dbc_parser.hpp */,
-				D33919742A0A342E002DD719 /* main.cpp */,
-				D33919702A0A342E002DD719 /* message.cpp */,
 				D33919712A0A342E002DD719 /* message.hpp */,
-				D33919752A0A342E002DD719 /* signal.cpp */,
+				D33919702A0A342E002DD719 /* message.cpp */,
 				D33919772A0A342E002DD719 /* signal.hpp */,
+				D33919752A0A342E002DD719 /* signal.cpp */,
 			);
 			path = CAN_DBC_DECODE_TOOL;
 			sourceTree = "<group>";

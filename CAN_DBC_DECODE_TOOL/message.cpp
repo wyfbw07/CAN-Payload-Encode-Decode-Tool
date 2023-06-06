@@ -30,7 +30,7 @@ std::istream& operator>>(std::istream& in, Message& msg) {
         in >> name;
     }
 	// Read message data length
-	in >> msg.dataLength;
+	in >> msg.messageSize;
 	// Read message sender name
 	in >> msg.senderName;
 	// Save istream positon before peeking next word
@@ -60,11 +60,11 @@ std::istream& operator>>(std::istream& in, Message& msg) {
 }
 
 // Create a hash table for all decoded signals
-std::unordered_map<std::string, double> Message::decode(unsigned char rawPayload[], unsigned short dlc) {
+std::unordered_map<std::string, double> Message::decode(unsigned char rawPayload[], unsigned int dlc) {
 	// Check input payload length
 	// If the length of the input payload is different than what is required by the DBC file,
 	// reject and fail the decode operation
-    if (dlc != dataLength) {
+    if (dlc != messageSize) {
         throw std::invalid_argument("The data length of the input payload does not match with DBC info. Decode failed.");
     }
     // Convert each unsigned char into string
