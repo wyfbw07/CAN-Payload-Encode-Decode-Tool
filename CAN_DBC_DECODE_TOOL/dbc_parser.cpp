@@ -74,7 +74,7 @@ bool DbcParser::parse(const std::string& filePath) {
 		loadAndParseFromFile(dbcFile);
 	}
 	else {
-		throw std::invalid_argument("Could not open DBC file.");
+		throw std::invalid_argument("Could not open CAN database file.");
 		return false;
 	}
 	// Parse complete, mark as successful
@@ -124,15 +124,15 @@ std::unordered_map<std::string, double> DbcParser::decode(unsigned int msgId, un
     messageLibrary_iterator data_itr_msg = messageLibrary.find(msgId);
     std::unordered_map<std::string, double> result;
     if (data_itr_msg == messageLibrary.end()) {
-        std::cout << "No matching message found. Decaode failed. An empty result is returned.\n" << std::endl;
+        std::cout << "No matching message found. Decode failed. An empty result is returned.\n" << std::endl;
     }
     else {
         result = messageLibrary[msgId].decode(payLoad, dlc);
         // Print decoded message info
-        // std::cout << "Decoded message[" << messageLibrary[msgId].getId() << "]: " << messageLibrary[msgId].getName() << std::endl;
-        // for (auto& decodedSig : result) {
-        //       std::cout << "  Signal: " << decodedSig.first << " " << decodedSig.second << std::endl;
-        // }
+         std::cout << "Decoded message[" << messageLibrary[msgId].getId() << "]: " << messageLibrary[msgId].getName() << std::endl;
+         for (auto& decodedSig : result) {
+               std::cout << "  Signal: " << decodedSig.first << " " << decodedSig.second << std::endl;
+         }
     }
 	return result;
 }
@@ -141,7 +141,7 @@ std::unordered_map<std::string, double> DbcParser::decode(unsigned int msgId, un
 double DbcParser::decodeSignalOnRequest(unsigned int msgId, unsigned char payLoad[], unsigned int dlc, std::string sigName) {
     messageLibrary_iterator data_itr_msg = messageLibrary.find(msgId);
     if (data_itr_msg == messageLibrary.end()) {
-        std::cout << "No matching message found. Decaode failed. A NULL is returned.\n" << std::endl;
+        std::cout << "No matching message found. Decode failed. A NULL is returned.\n" << std::endl;
         return NULL;
     }
     else {
@@ -149,7 +149,7 @@ double DbcParser::decodeSignalOnRequest(unsigned int msgId, unsigned char payLoa
         result = messageLibrary[msgId].decode(payLoad, dlc);
         std::unordered_map<std::string, double>::iterator data_itr_sig = result.find(sigName);
         if (data_itr_sig == result.end()) {
-            std::cout << "No matching signal found. Decaode failed. A NULL is returned.\n" << std::endl;
+            std::cout << "No matching signal found. Decode failed. A NULL is returned.\n" << std::endl;
             return NULL;
         }
         else {
@@ -158,4 +158,23 @@ double DbcParser::decodeSignalOnRequest(unsigned int msgId, unsigned char payLoa
             return data_itr_sig->second;
         }
     }
+}
+
+void DbcParser::encode(unsigned int msgId,
+                       std::vector<std::pair<std::string, double> > signalsToEncode,
+                       unsigned char encodedPayload[]) {
+    messageLibrary_iterator data_itr_msg = messageLibrary.find(msgId);
+    if (data_itr_msg == messageLibrary.end()) {
+        std::cout << "No matching message found. Encode failed. An empty result is returned.\n" << std::endl;
+    }
+    else {
+        messageLibrary[msgId].encode(signalsToEncode, encodedPayload);
+        // Print encoded message info
+//         std::cout << "Encoded message[" << messageLibrary[msgId].getId() << "]: " << messageLibrary[msgId].getName() << std::endl;
+//        for (short int i = 0; i < 8; i++) {
+//               std::cout << std::bitset<sizeof(encodedPayload[i])*8>(encodedPayload[i]) << std::endl;
+//         }
+    }
+    
+    
 }

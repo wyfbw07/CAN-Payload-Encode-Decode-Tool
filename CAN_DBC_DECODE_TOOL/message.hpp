@@ -43,8 +43,9 @@ public:
 	std::unordered_map<std::string, Signal> getSignalsInfo() const { return signalsLibrary; }
     // Parse signal value descrption
     std::istream& parseSignalValueDescription(std::istream& in);
-	// Used to decode messages
+	// Used to encode/decode messages
 	std::unordered_map<std::string, double> decode(unsigned char rawPayload[], unsigned int dlc);
+    void encode(std::vector<std::pair<std::string, double> > signalsToEncode, unsigned char encodedPayload[]);
 
 };
 #endif

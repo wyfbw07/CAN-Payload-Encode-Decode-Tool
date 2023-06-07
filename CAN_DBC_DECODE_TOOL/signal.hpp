@@ -46,8 +46,9 @@ public:
 	ValueTypes getValueTypes() const { return valueType; }
 	// Get names of all the nodes that receives this signal
 	std::vector<std::string> getReceiversName() const { return receiversName; }
-    // Decode payload for the signal
-	double getDecodedValue(std::vector<std::string> rawPayload);
+    // Convert the signals raw value into the signal's physical value and vice versa
+	double decodeSignal(unsigned char rawPayload[], unsigned int messageSize);
+    uint64_t encodeSignal(double& physicalValue);
     // Parse signal value descrption
     std::istream& parseSignalValueDescription(std::istream& in);
 	// Operator overload, allows parsing of signals info

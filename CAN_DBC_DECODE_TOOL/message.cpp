@@ -67,19 +67,33 @@ std::unordered_map<std::string, double> Message::decode(unsigned char rawPayload
     if (dlc != messageSize) {
         throw std::invalid_argument("The data length of the input payload does not match with DBC info. Decode failed.");
     }
-    // Convert each unsigned char into string
-    std::vector<std::string> payload;
-    for (unsigned short i = 0; i < dlc; i++){
-        std::ostringstream convertor;
-        convertor << std::hex << (0xFF & rawPayload[i]);
-        payload.push_back(convertor.str());
-    }
     // Decode
 	std::unordered_map<std::string, double> sigValues;
 	for (auto& it : signalsLibrary) {
-		sigValues.insert(std::make_pair(it.second.getName(), it.second.getDecodedValue(payload)));
+		sigValues.insert(std::make_pair(it.second.getName(), it.second.decodeSignal(rawPayload, messageSize)));
 	}
 	return sigValues;
+}
+
+void Message::encode(std::vector<std::pair<std::string, double> > signalsToEncode, unsigned char encodedPayload[]){
+    uint64_t encodedValue = 0;
+    for (unsigned short i = 0; i < signalsToEncode.size(); i++) {
+        // Find the signal to encode
+        signalsLibrary_iterator signals_itr = signalsLibrary.find(signalsToEncode[i].first);
+        if (signals_itr != signalsLibrary.end()) {
+            // Encode
+            uint64_t encodedValueOfSingleSignal = signals_itr->second.encodeSignal(signalsToEncode[i].second);
+            // Store encoded result with results from other signals
+            encodedValue |= encodedValueOfSingleSignal;
+        }
+        else {
+            throw std::invalid_argument("Cannot find signal: " + signalsToEncode[i].first + " in CAN database. Encoding of this signal is omitted.");
+        }
+    }
+    std::cout << std::endl;
+    std::cout << "Encoded message: " << std::bitset<64>(encodedValue) << std::endl;
+    std::cout << std::endl;
+    // TODO: Convert encoded value into unsigned char array
 }
 
 std::istream& Message::parseSignalValueDescription(std::istream& in) {
@@ -91,7 +105,7 @@ std::istream& Message::parseSignalValueDescription(std::istream& in) {
         signals_itr->second.parseSignalValueDescription(in);
     }
     else {
-        throw std::invalid_argument("Cannot find signal: " + name + ". Parse failed.");
+        throw std::invalid_argument("Cannot find signal: " + sigName + " in CAN database. Parse failed.");
     }
     return in;
 }

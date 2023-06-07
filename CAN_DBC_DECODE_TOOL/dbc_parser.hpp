@@ -22,11 +22,15 @@ public:
 	// Construct using either a File or a Stream of a DBC-File
 	// A bool is used to indicate whether parsing succeeds or not
 	bool parse(const std::string& filePath);
+    // Print DBC Info
+    void printDbcInfo();
 	// Decode
 	std::unordered_map<std::string, double> decode(unsigned int msgId, unsigned char payLoad[], unsigned int dlc);
 	double decodeSignalOnRequest(unsigned int msgId, unsigned char payLoad[], unsigned int dlc, std::string sigName);
-	// Print DBC Info
-	void printDbcInfo();
+    // Encode
+    void encode(unsigned int msgId,
+                std::vector<std::pair<std::string, double> > signalsToEncode,
+                unsigned char* encodedPayload);
 
 private:
 
