@@ -10,11 +10,17 @@ No arguments is required to run. Edit properties in main to use this tool.
 
 
 
+## Error Handling
+
+This tool uses exceptions to eraise errors. As a result, running and calling functions should be wrapped into a try-catch block. If nothing is added to catch potential errors, it could cause program termination.
+
+
+
 ## Sample Usage
 
 Not all input arguments must be provide to run. There are three use cases available.
 
-- **Extract DBC File Info Only:**
+- **Parse DBC File Only:**
 
 	```c++
 	DbcParser dbcFile;
@@ -23,12 +29,16 @@ Not all input arguments must be provide to run. There are three use cases availa
 	
 	By only providing the DBC file address, the program would parse and extract message and signals info in the file.
 	
+	<u>Parse function should be called ONLY once.</u> Recalling of this function is not allowed. If you did modifications to your DBC file and want to reload/reparse the database, destroy the previous DbcParser class instance and create a new one to continue.
+	
 - **Decode an Entire Message:**
 
   ```c++
-  int dlc = 6;
-  int msgId = 168;
+  // Prepare data
+  unsigned int dlc = 6;
+  unsigned int msgId = 168;
   unsigned char rawPayload[8] = {0xe8, 0x0, 0x0, 0x0, 0x0, 0x0};
+  // Decode
   dbcFile.decode(msgId, rawPayload, dlc);
   ```
 
@@ -37,10 +47,12 @@ Not all input arguments must be provide to run. There are three use cases availa
 - **Decode a Specific Signal Under a Message:**
 
 	```c++
-	int dlc = 6;
-	int msgId = 168;
+	// Prepare data
+	unsigned int dlc = 6;
+	unsigned int msgId = 168;
 	unsigned char rawPayload[8] = {0xe8, 0x0, 0x0, 0x0, 0x0, 0x0};
 	std::string sigName = "EngineTemp";
+	// Decode
 	dbcFile.decodeSignalOnRequest(msgId, rawPayload, dlc, sigName);
 	```
 	
@@ -53,11 +65,13 @@ Not all input arguments must be provide to run. There are three use cases availa
 ### Load and Parse DBC File
 
 ```c++
-bool parse(const std::string& filePath);
+bool DbcParser::parse(const std::string& filePath);
 ```
 
-- Use: To load and parse a DBC file, given the file path in string
-- Returns: A bool to indicate whether parsing succeeds (true) or not (false)
+| About this function | Description                                                  |
+| :------------------ | :----------------------------------------------------------- |
+| Use case            | To load and parse a DBC file, given the file path in string  |
+| Return value        | A bool to indicate whether parsing succeeds (true) or not (false) |
 
 Sample usage of this function:
 
@@ -68,16 +82,16 @@ dbcFile.parse("/Users/filelocation/XVehicle.dbc");
 
 A instance of the class DbcParser must be created first, and use the parse function to load and parse the DBC file. All messages and signals info will then be stored.
 
-*<u>This function can be called only once.</u>* Currently it does not allow repeated calls of this function. Typically there is little use cases that you would want to re-parse the file. However if you do want to re-parse, destroy the existing class instance and create a new one to parse again.
+Again, <u>this function can be called ONLY once.</u> It does not allow repeated calls of this function. There is little use cases that you would want to re-parse the file. However if you do want to re-parse, destroy the existing class instance and create a new one to parse again.
 
-For message classes, these information will be stored: 
+For message classes, these information will be parsed: 
 - Message name
 - Message ID
 - Message size (payload length)
 - Transmitter name
 - A std::vector of Signal classes
 
-For signal classes, these information will be stored: 
+For signal classes, these information will be parsed: 
 - Signal name
 - Signal unit
 - Signal start bit
@@ -96,11 +110,13 @@ For signal classes, these information will be stored:
 ### Print DBC File Info
 
 ```c++
-void printDbcInfo();
+void DbcParser::printDbcInfo();
 ```
 
-- Use: To display all message and signal info in the DBC File 
-- Returns: std::cout in terminal
+| About this function | Description                                            |
+| :------------------ | :----------------------------------------------------- |
+| Use case            | To display all message and signal info in the DBC File |
+| Return value        | std::cout in terminal                                  |
 
 Sample usage of this function:
 
@@ -115,17 +131,21 @@ Use this function to display DBC file info once a DBC file is loaded and parsed.
 ### Decode an Entire Message
 
 ```c++
-std::unordered_map<std::string, double> DbcParser::decode(uint32_t msgId, unsigned char payLoad[], unsigned short dlc);
+std::unordered_map<std::string, double> DbcParser::decode(unsigned long msgId, unsigned char payLoad[], unsigned int dlc);
 ```
 
-- Use: To decode an entire message
-- Input parameters: (Message ID in decimal, An array of message payload, Message size)
-- Returns: std::unordered_map<Signal name, decoded value>
+| About this function | Description                                                  |
+| :------------------ | :----------------------------------------------------------- |
+| Use case            | To decode an entire message                                  |
+| Input parameters    | (Message ID in decimal, An array of message payload, Message size) |
+| Return value        | std::unordered_map<Signal name, decoded value>               |
 
 Sample usage of this function:
 
 ```c++
+// Prepare data
 unsigned char rawPayload[8] = {0xe8, 0x0, 0x0, 0x0, 0x0, 0x0};
+// Decode
 dbcFile.decode(168, rawPayload, 6);
 ```
 
@@ -133,36 +153,69 @@ The function will return an unordered map: <Signal name, decoded value>, where f
 
 
 
-### Decode a Specific Signal Under a Message
+### Decode and Show Specific Signal Value Under a Message
 
 ```c++
-double DbcParser::decodeSignalOnRequest(uint32_t msgId, unsigned char payLoad[], unsigned short dlc, std::string sigName);
+double DbcParser::decodeSignalOnRequest(unsigned long msgId, unsigned char payLoad[], unsigned int dlc, std::string sigName);
 ```
 
-- Use: To decode a specific signal under a message
-- Input parameters: (Message ID in decimal, An array of message payload, Message size, Signal name)
-- Returns: A decoded value of type double
+| About this function | Description                                                  |
+| :------------------ | :----------------------------------------------------------- |
+| Use case            | To decode a specific signal under a message                  |
+| Input parameters    | (Message ID in decimal, An array of message payload, Message size, Signal name) |
+| Return value        | A decoded value of type double                               |
 
 Sample usage of this function:
 
 ```c++
+// Prepare data
 unsigned char rawPayload[8] = {0xe8, 0x0, 0x0, 0x0, 0x0, 0x0};
+// Decode
 dbcFile.decodeSignalOnRequest(168, payLoad, 6, "EngineTemp");
 ```
 
-To decode an specific signal under one message, call this function. The function will return the decoded value for that signal. The function now checks input payload length, returns decode result, and no longer prints decoded information by default.
+Call this function to decode an specific signal under one message. The function will return the decoded value for that signal. The function now checks input payload length, returns decode result, and no longer prints decoded information by default.
+
+
+
+### Encode a Message
+
+```c++
+unsigned int DbcParser::encode(unsigned long msgId,
+                               std::vector<std::pair<std::string, double> > signalsToEncode,
+                               unsigned char encodedPayload[MAX_MSG_LEN])
+```
+
+| About this function | Description                                                  |
+| :------------------ | :----------------------------------------------------------- |
+| Use case            | To encode an entire message                                  |
+| Input parameters    | (Message ID in decimal, An vector of pair of signal name and physical value, A fixed size 8 slots array that contains the encoded result) |
+| Return value        | Message size of the encoded payload                          |
+
+Sample usage of this function:
+
+```c++
+// Prepare data
+unsigned int encodedDlc = 0;
+unsigned char encodedPayload[8];
+std::vector<std::pair<std::string, double> > signalsToEncode;
+signalsToEncode.push_back(std::make_pair("EngSpeed", 50));
+signalsToEncode.push_back(std::make_pair("EngSpeed_Second", 1535));
+// Encode
+encodedDlc = dbcFile.encode(168, signalsToEncode, encodedPayload);
+```
+
+The function encodes one or more signals at once into a single message payload. The fixed size encodedPayload array contains the generated payload once the function has been called. An additional value is returned to specify the message size of the encoded payload.
 
 
 
 ## Resources
 
-Here is the reference PDF for CAN bus [DBC File Format Documentation](http://mcu.so/Microcontroller/Automotive/dbc-file-format-documentation_compress.pdf) Version 1.0.5 by Vector Informatik GmbH
+Reference PDF for CAN bus [DBC File Format Documentation](http://mcu.so/Microcontroller/Automotive/dbc-file-format-documentation_compress.pdf) Version 1.0.5 by Vector Informatik GmbH.
 
 
 
 ## What's New
 
-- Input arguments are no longer required upon running
-- The type of the input payload in decode functions are now changed to an fixed sized array of unsigned char, with an addition of the payload length called dlc.
-- The parser now parses signal value descriptions.
+- This tool now supports encoding CAN bus messages.  One or more signals can be encoded at once into a single message payload. 
 

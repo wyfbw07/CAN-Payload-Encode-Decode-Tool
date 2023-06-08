@@ -95,7 +95,7 @@ void DbcParser::printDbcInfo() {
 		std::cout << message->getName() << " " << (*message).getId() << std::endl;
 		for (auto& sig : message->getSignalsInfo()) {
 			std::cout << "Signal: " << sig.second.getName() << "  ";
-			std::cout << sig.second.getStartBit() << "," << sig.second.getDataLength() << std::endl;
+			std::cout << sig.second.getStartBit() << "," << sig.second.getSignalSize() << std::endl;
 			std::cout << "(" << sig.second.getFactor() << ", " << sig.second.getOffset() << ")" << std::endl;
 			std::cout << "[" << sig.second.getMinValue() << "," << sig.second.getMaxValue() << "]" << std::endl;
 			if (sig.second.getByteOrder() == ByteOrders::Intel) {
@@ -120,7 +120,7 @@ void DbcParser::printDbcInfo() {
 }
 
 // If no specific signal name is requested, decode all signals by default
-std::unordered_map<std::string, double> DbcParser::decode(unsigned int msgId, unsigned char payLoad[], unsigned int dlc) {
+std::unordered_map<std::string, double> DbcParser::decode(unsigned long msgId, unsigned char payLoad[], unsigned int dlc) {
     messageLibrary_iterator data_itr_msg = messageLibrary.find(msgId);
     std::unordered_map<std::string, double> result;
     if (data_itr_msg == messageLibrary.end()) {
@@ -128,17 +128,12 @@ std::unordered_map<std::string, double> DbcParser::decode(unsigned int msgId, un
     }
     else {
         result = messageLibrary[msgId].decode(payLoad, dlc);
-        // Print decoded message info
-         std::cout << "Decoded message[" << messageLibrary[msgId].getId() << "]: " << messageLibrary[msgId].getName() << std::endl;
-         for (auto& decodedSig : result) {
-               std::cout << "  Signal: " << decodedSig.first << " " << decodedSig.second << std::endl;
-         }
     }
 	return result;
 }
 
 // If specific signal name is requested, decode all signals but only displays decoded value of the requested signal
-double DbcParser::decodeSignalOnRequest(unsigned int msgId, unsigned char payLoad[], unsigned int dlc, std::string sigName) {
+double DbcParser::decodeSignalOnRequest(unsigned long msgId, unsigned char payLoad[], unsigned int dlc, std::string sigName) {
     messageLibrary_iterator data_itr_msg = messageLibrary.find(msgId);
     if (data_itr_msg == messageLibrary.end()) {
         std::cout << "No matching message found. Decode failed. A NULL is returned.\n" << std::endl;
@@ -160,21 +155,21 @@ double DbcParser::decodeSignalOnRequest(unsigned int msgId, unsigned char payLoa
     }
 }
 
-void DbcParser::encode(unsigned int msgId,
-                       std::vector<std::pair<std::string, double> > signalsToEncode,
-                       unsigned char encodedPayload[]) {
+unsigned int DbcParser::encode(unsigned long msgId,
+                               std::vector<std::pair<std::string, double> > signalsToEncode,
+                               unsigned char encodedPayload[MAX_MSG_LEN]) {
+    unsigned int dlc = 0;
     messageLibrary_iterator data_itr_msg = messageLibrary.find(msgId);
     if (data_itr_msg == messageLibrary.end()) {
         std::cout << "No matching message found. Encode failed. An empty result is returned.\n" << std::endl;
     }
     else {
-        messageLibrary[msgId].encode(signalsToEncode, encodedPayload);
+        dlc = messageLibrary[msgId].encode(signalsToEncode, encodedPayload);
         // Print encoded message info
 //         std::cout << "Encoded message[" << messageLibrary[msgId].getId() << "]: " << messageLibrary[msgId].getName() << std::endl;
 //        for (short int i = 0; i < 8; i++) {
 //               std::cout << std::bitset<sizeof(encodedPayload[i])*8>(encodedPayload[i]) << std::endl;
 //         }
     }
-    
-    
+    return dlc;
 }

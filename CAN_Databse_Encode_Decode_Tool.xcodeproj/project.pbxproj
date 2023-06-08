@@ -27,7 +27,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		D33919652A0A33A9002DD719 /* CAN_DBC_DECODE_TOOL */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = CAN_DBC_DECODE_TOOL; sourceTree = BUILT_PRODUCTS_DIR; };
+		D33919652A0A33A9002DD719 /* CAN_Databse_Encode_Decode_Tool */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = CAN_Databse_Encode_Decode_Tool; sourceTree = BUILT_PRODUCTS_DIR; };
 		D339196F2A0A342E002DD719 /* dbc_parser_helper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = dbc_parser_helper.cpp; sourceTree = "<group>"; };
 		D33919702A0A342E002DD719 /* message.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = message.cpp; sourceTree = "<group>"; };
 		D33919712A0A342E002DD719 /* message.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = message.hpp; sourceTree = "<group>"; };
@@ -53,7 +53,7 @@
 		D339195C2A0A33A9002DD719 = {
 			isa = PBXGroup;
 			children = (
-				D33919672A0A33A9002DD719 /* CAN_DBC_DECODE_TOOL */,
+				D33919672A0A33A9002DD719 /* CAN_Databse_Encode_Decode_Tool */,
 				D33919662A0A33A9002DD719 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -61,12 +61,12 @@
 		D33919662A0A33A9002DD719 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				D33919652A0A33A9002DD719 /* CAN_DBC_DECODE_TOOL */,
+				D33919652A0A33A9002DD719 /* CAN_Databse_Encode_Decode_Tool */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		D33919672A0A33A9002DD719 /* CAN_DBC_DECODE_TOOL */ = {
+		D33919672A0A33A9002DD719 /* CAN_Databse_Encode_Decode_Tool */ = {
 			isa = PBXGroup;
 			children = (
 				D33919742A0A342E002DD719 /* main.cpp */,
@@ -79,15 +79,15 @@
 				D33919772A0A342E002DD719 /* signal.hpp */,
 				D33919752A0A342E002DD719 /* signal.cpp */,
 			);
-			path = CAN_DBC_DECODE_TOOL;
+			path = CAN_Databse_Encode_Decode_Tool;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		D33919642A0A33A9002DD719 /* CAN_DBC_DECODE_TOOL */ = {
+		D33919642A0A33A9002DD719 /* CAN_Databse_Encode_Decode_Tool */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = D339196C2A0A33A9002DD719 /* Build configuration list for PBXNativeTarget "CAN_DBC_DECODE_TOOL" */;
+			buildConfigurationList = D339196C2A0A33A9002DD719 /* Build configuration list for PBXNativeTarget "CAN_Databse_Encode_Decode_Tool" */;
 			buildPhases = (
 				D33919612A0A33A9002DD719 /* Sources */,
 				D33919622A0A33A9002DD719 /* Frameworks */,
@@ -97,9 +97,9 @@
 			);
 			dependencies = (
 			);
-			name = CAN_DBC_DECODE_TOOL;
+			name = CAN_Databse_Encode_Decode_Tool;
 			productName = CAN_DBC_DECODE_TOOL;
-			productReference = D33919652A0A33A9002DD719 /* CAN_DBC_DECODE_TOOL */;
+			productReference = D33919652A0A33A9002DD719 /* CAN_Databse_Encode_Decode_Tool */;
 			productType = "com.apple.product-type.tool";
 		};
 /* End PBXNativeTarget section */
@@ -116,7 +116,7 @@
 					};
 				};
 			};
-			buildConfigurationList = D33919602A0A33A9002DD719 /* Build configuration list for PBXProject "CAN_DBC_DECODE_TOOL" */;
+			buildConfigurationList = D33919602A0A33A9002DD719 /* Build configuration list for PBXProject "CAN_Databse_Encode_Decode_Tool" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -129,7 +129,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				D33919642A0A33A9002DD719 /* CAN_DBC_DECODE_TOOL */,
+				D33919642A0A33A9002DD719 /* CAN_Databse_Encode_Decode_Tool */,
 			);
 		};
 /* End PBXProject section */
@@ -202,7 +202,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 13.3;
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -256,7 +256,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 13.3;
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = macosx;
@@ -288,7 +288,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		D33919602A0A33A9002DD719 /* Build configuration list for PBXProject "CAN_DBC_DECODE_TOOL" */ = {
+		D33919602A0A33A9002DD719 /* Build configuration list for PBXProject "CAN_Databse_Encode_Decode_Tool" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				D339196A2A0A33A9002DD719 /* Debug */,
@@ -297,7 +297,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		D339196C2A0A33A9002DD719 /* Build configuration list for PBXNativeTarget "CAN_DBC_DECODE_TOOL" */ = {
+		D339196C2A0A33A9002DD719 /* Build configuration list for PBXNativeTarget "CAN_Databse_Encode_Decode_Tool" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				D339196D2A0A33A9002DD719 /* Debug */,

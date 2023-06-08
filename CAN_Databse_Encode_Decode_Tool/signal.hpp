@@ -8,10 +8,14 @@
 #ifndef SIGNAL_H
 #define SIGNAL_H
 
+#include <limits>
 #include <string>
 #include <vector>
 #include <iosfwd>
 #include "dbc_parser_helper.hpp"
+
+constexpr int MAX_MSG_LEN = 8;
+constexpr int MAX_BIT_INDEX_uint64_t = (sizeof(uint64_t) * CHAR_BIT) - 1;
 
 enum class ByteOrders {
 	NotSet,
@@ -39,15 +43,15 @@ public:
 	double getMinValue() const { return minValue; }
 	double getMaxValue() const { return maxValue; }
 	// Get start bit and data length
-	unsigned short getStartBit() const { return startBit; }
-	unsigned short getDataLength() const { return signalSize; }
+	unsigned int getStartBit() const { return startBit; }
+	unsigned int getSignalSize() const { return signalSize; }
 	// Get byte order: Intel (little-endian) or Motorola (Big-endian)
 	ByteOrders getByteOrder() const { return byteOrder; }
 	ValueTypes getValueTypes() const { return valueType; }
 	// Get names of all the nodes that receives this signal
 	std::vector<std::string> getReceiversName() const { return receiversName; }
     // Convert the signals raw value into the signal's physical value and vice versa
-	double decodeSignal(unsigned char rawPayload[], unsigned int messageSize);
+	double decodeSignal(unsigned char rawPayload[MAX_MSG_LEN], unsigned int messageSize);
     uint64_t encodeSignal(double& physicalValue);
     // Parse signal value descrption
     std::istream& parseSignalValueDescription(std::istream& in);
@@ -80,6 +84,7 @@ private:
 	// Names of all the nodes that receives this signal
 	std::vector<std::string> receiversName{};
     // Signal value descriptions: define encodings for specific signal raw values
+    // <physical value, label of the value>
     std::unordered_map<double, std::string> valueDescriptions;
 	// Helper functions that are essential to parsing
     std::vector<std::string>& splitWithDeliminators(const std::string& str,

@@ -6,9 +6,7 @@
  */
 
 #include <iomanip>
-#include <fstream>
 #include <iostream>
-#include <string>
 #include <sstream>
 #include <algorithm>
 #include "signal.hpp"
@@ -73,14 +71,14 @@ std::istream& operator>>(std::istream& in, Signal& sig) {
 	return in;
 }
 
-double Signal::decodeSignal(unsigned char rawPayload[], unsigned int messageSize) {
+double Signal::decodeSignal(unsigned char rawPayload[MAX_MSG_LEN], unsigned int messageSize) {
     int64_t decodedValue = 0;
-    unsigned short currentBit = 0;
+    unsigned int currentBit = 0;
     // Intel
     if (byteOrder == ByteOrders::Intel) {
         // Concatenate data bytes
         // Convert each unsigned char into string
-        unsigned int payload = 0;
+        int64_t payload = 0;
         std::string concatenatedPayload;
         std::vector<std::string> literalPayload;
         for (unsigned short i = 0; i < messageSize; i++){
@@ -88,19 +86,19 @@ double Signal::decodeSignal(unsigned char rawPayload[], unsigned int messageSize
             convertor << std::hex << (0xFF & rawPayload[i]);
             literalPayload.push_back(convertor.str());
         }
-        for (unsigned long i = literalPayload.size(); i-- > 0; ) {
+        for (unsigned short i = literalPayload.size(); i-- > 0; ) {
             concatenatedPayload += literalPayload[i];
         }
         // Convert to DEC
         std::istringstream converter(concatenatedPayload);
         converter >> std::hex >> payload;
         // Decode
-        std::cout << "" << std::bitset<64>(payload) << std::endl;
+        // std::cout << "" << std::bitset<sizeof(payload)*8>(payload) << std::endl;
         uint8_t* data = (uint8_t*)&payload;
         currentBit = startBit;
         // Access the corresponding byte and make sure we are reading a bit that is 1
-        for (int bitpos = 0; bitpos < signalSize; bitpos++) {
-            if (data[currentBit / 8] & (1 << (currentBit % 8))) {
+        for (short bitpos = 0; bitpos < signalSize; bitpos++) {
+            if (data[currentBit / CHAR_BIT] & (1 << (currentBit % CHAR_BIT))) {
                 // Add dominant bit
                 if (byteOrder == ByteOrders::Intel) {
                     decodedValue |= (1ULL << bitpos);
@@ -117,12 +115,12 @@ double Signal::decodeSignal(unsigned char rawPayload[], unsigned int messageSize
         // Translate start bit into sequential order
         unsigned int translationFactor = 1;
         unsigned int translationOffset = 0;
-        translationFactor = (startBit / 8);
-        translationOffset = (8 - (startBit) % 8 - 1);
-        currentBit = translationFactor * 8 + translationOffset;
+        translationFactor = (startBit / CHAR_BIT);
+        translationOffset = (CHAR_BIT - (startBit) % CHAR_BIT - 1);
+        currentBit = translationFactor * CHAR_BIT + translationOffset;
         // Decode
-        for (int bitpos = 0; bitpos < signalSize; bitpos++) {
-            if (rawPayload[currentBit / 8] & (1 << ((63 - currentBit) % 8))) {
+        for (short bitpos = 0; bitpos < signalSize; bitpos++) {
+            if (rawPayload[currentBit / CHAR_BIT] & (1 << ((MAX_BIT_INDEX_uint64_t - currentBit) % CHAR_BIT))) {
                 // Add dominant bit
                 decodedValue |= (1ULL << (signalSize - bitpos - 1));
             }
@@ -138,7 +136,7 @@ double Signal::decodeSignal(unsigned char rawPayload[], unsigned int messageSize
 uint64_t Signal::encodeSignal(double& physicalValue) {
     // Reverse linear conversion rule
     // to convert the signals physical value into the signal's raw value
-    unsigned short currentBit = 0;
+    unsigned int currentBit = 0;
     uint64_t encodedValue = 0;
     uint64_t rawValue = (physicalValue - offset)/factor;
     uint8_t* rawPayload = (uint8_t*)&rawValue;
@@ -146,26 +144,27 @@ uint64_t Signal::encodeSignal(double& physicalValue) {
         // Encode
         for (int bitpos = 0; bitpos < signalSize; bitpos++) {
             // Access the corresponding byte and make sure we are reading a bit that is 1
-            if (rawPayload[currentBit / 8] & (1 << (currentBit % 8))) {
+            if (rawPayload[currentBit / CHAR_BIT] & (1 << (currentBit % CHAR_BIT))) {
                 // Add dominant bit
                 encodedValue |= (1ULL << (bitpos + startBit));
             }
             currentBit++;
         }
+        encodedValue = __builtin_bswap64(encodedValue);
     }
     else { // Motorola MSB
         // Translate start bit into sequential order
         unsigned int translationFactor = 1; // Factor CANNOT default to 0
         unsigned int translationOffset = 0;
         unsigned int translatedstartBit = 0;
-        translationFactor = (startBit / 8);
-        translationOffset = (8 - (startBit) % 8 - 1);
-        translatedstartBit = translationFactor * 8 + translationOffset;
+        translationFactor = (startBit / CHAR_BIT);
+        translationOffset = (CHAR_BIT - (startBit) % CHAR_BIT - 1);
+        translatedstartBit = translationFactor * CHAR_BIT + translationOffset;
         // Access the corresponding byte and make sure we are reading a bit that is 1
-        for (int bitpos = 0; bitpos < signalSize; bitpos++) {
-            if (rawPayload[currentBit / 8] & (1 << (currentBit % 8))) {
+        for (short bitpos = 0; bitpos < signalSize; bitpos++) {
+            if (rawPayload[currentBit / CHAR_BIT] & (1 << (currentBit % CHAR_BIT))) {
                 // Add dominant bit
-                encodedValue |= (1ULL << (bitpos + (63 - (translatedstartBit + signalSize - 1))));
+                encodedValue |= (1ULL << (bitpos + (MAX_BIT_INDEX_uint64_t - (translatedstartBit + signalSize - 1))));
                 // std::cout << " " << std::bitset<64>(encodedValue) << std::endl;
             }
             currentBit++;

@@ -5,7 +5,6 @@
  *      Author: Yifan Wang
  */
 
-#include <fstream>
 #include <iostream>
 #include <sstream>
 #include "message.hpp"
@@ -60,7 +59,7 @@ std::istream& operator>>(std::istream& in, Message& msg) {
 }
 
 // Create a hash table for all decoded signals
-std::unordered_map<std::string, double> Message::decode(unsigned char rawPayload[], unsigned int dlc) {
+std::unordered_map<std::string, double> Message::decode(unsigned char rawPayload[MAX_MSG_LEN], unsigned int dlc) {
 	// Check input payload length
 	// If the length of the input payload is different than what is required by the DBC file,
 	// reject and fail the decode operation
@@ -75,7 +74,7 @@ std::unordered_map<std::string, double> Message::decode(unsigned char rawPayload
 	return sigValues;
 }
 
-void Message::encode(std::vector<std::pair<std::string, double> > signalsToEncode, unsigned char encodedPayload[]){
+unsigned int Message::encode(std::vector<std::pair<std::string, double> > signalsToEncode, unsigned char encodedPayload[]){
     uint64_t encodedValue = 0;
     for (unsigned short i = 0; i < signalsToEncode.size(); i++) {
         // Find the signal to encode
@@ -85,15 +84,18 @@ void Message::encode(std::vector<std::pair<std::string, double> > signalsToEncod
             uint64_t encodedValueOfSingleSignal = signals_itr->second.encodeSignal(signalsToEncode[i].second);
             // Store encoded result with results from other signals
             encodedValue |= encodedValueOfSingleSignal;
+            // std::cout << "Display encoded signal in 64 bit:  " << std::bitset<sizeof(encodedValueOfSingleSignal)*CHAR_BIT>(encodedValueOfSingleSignal) << std::endl;
         }
         else {
-            throw std::invalid_argument("Cannot find signal: " + signalsToEncode[i].first + " in CAN database. Encoding of this signal is omitted.");
+            throw std::invalid_argument("Cannot find signal: " + signalsToEncode[i].first + " in CAN database. Encode failed.");
         }
     }
-    std::cout << std::endl;
-    std::cout << "Encoded message: " << std::bitset<64>(encodedValue) << std::endl;
-    std::cout << std::endl;
-    // TODO: Convert encoded value into unsigned char array
+    // std::cout << "Display encoded message in 64 bit: " << std::bitset<sizeof(encodedValue)*CHAR_BIT>(encodedValue) << std::endl;
+    for (short i = 8 - 1; i >= 0; i--) {
+        encodedPayload[i] = encodedValue % 256; // get the last byte
+        encodedValue /= 256; // get the remainder
+    }
+    return messageSize;
 }
 
 std::istream& Message::parseSignalValueDescription(std::istream& in) {

@@ -25,23 +25,23 @@ public:
     // Print DBC Info
     void printDbcInfo();
 	// Decode
-	std::unordered_map<std::string, double> decode(unsigned int msgId, unsigned char payLoad[], unsigned int dlc);
-	double decodeSignalOnRequest(unsigned int msgId, unsigned char payLoad[], unsigned int dlc, std::string sigName);
+	std::unordered_map<std::string, double> decode(unsigned long msgId, unsigned char payLoad[], unsigned int dlc);
+	double decodeSignalOnRequest(unsigned long msgId, unsigned char payLoad[], unsigned int dlc, std::string sigName);
     // Encode
-    void encode(unsigned int msgId,
-                std::vector<std::pair<std::string, double> > signalsToEncode,
-                unsigned char* encodedPayload);
+    unsigned int encode(unsigned long msgId,
+                        std::vector<std::pair<std::string, double> > signalsToEncode,
+                        unsigned char encodedPayload[MAX_MSG_LEN]);
 
 private:
 
-    typedef std::unordered_map<uint32_t, Message>::iterator messageLibrary_iterator;
+    typedef std::unordered_map<unsigned long, Message>::iterator messageLibrary_iterator;
 	// A bool to indicate whether DBC file has been loaded or not
 	bool emptyLibrary = true;
 	// This list contains all the messages which got parsed from the DBC-File
 	typedef std::vector<Message*> messages_t;
 	messages_t messagesInfo;
 	// A hash table that stores all info of messages. <Message id, Message object>
-	std::unordered_map<unsigned int, Message> messageLibrary;
+	std::unordered_map<unsigned long, Message> messageLibrary;
 	// Function used to parse DBC file
 	void loadAndParseFromFile(std::istream& in);
 
