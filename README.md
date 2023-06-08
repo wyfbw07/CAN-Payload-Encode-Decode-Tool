@@ -1,4 +1,4 @@
-# CAN_DBC_DECODE_TOOL
+# CAN Database Encode Decode Tool
 
 
 
