@@ -22,19 +22,19 @@ public:
 	// Construct using either a File or a Stream of a DBC-File
 	// A bool is used to indicate whether parsing succeeds or not
 	bool parse(const std::string& filePath);
-    // Print DBC Info
-    void printDbcInfo();
+	// Print DBC Info
+	void printDbcInfo();
 	// Decode
 	std::unordered_map<std::string, double> decode(unsigned long msgId, unsigned char payLoad[], unsigned int dlc);
 	double decodeSignalOnRequest(unsigned long msgId, unsigned char payLoad[], unsigned int dlc, std::string sigName);
-    // Encode
-    unsigned int encode(unsigned long msgId,
-                        std::vector<std::pair<std::string, double> > signalsToEncode,
-                        unsigned char encodedPayload[MAX_MSG_LEN]);
+	// Encode
+	unsigned int encode(unsigned long msgId,
+						std::vector<std::pair<std::string, double> > signalsToEncode,
+						unsigned char encodedPayload[MAX_MSG_LEN]);
 
 private:
 
-    typedef std::unordered_map<unsigned long, Message>::iterator messageLibrary_iterator;
+	typedef std::unordered_map<unsigned long, Message>::iterator messageLibrary_iterator;
 	// A bool to indicate whether DBC file has been loaded or not
 	bool emptyLibrary = true;
 	// This list contains all the messages which got parsed from the DBC-File

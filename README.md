@@ -2,11 +2,17 @@
 
 
 
-## Build on macOS
+## Build and Run
+
+### On macOS
 
 Open the .xcodeproj project file, hit Build (Cmd+B).
 
 No arguments is required to run. Edit properties in main to use this tool.
+
+### On Other Operating Systems
+
+You will need to use the these source files and create a new project on your own to build. This tool has been tested on Visual Studio 17.6.0 and Qt Creator 6.4.3 on Windows 11 64bit.
 
 
 
@@ -113,10 +119,10 @@ For signal classes, these information will be parsed:
 void DbcParser::printDbcInfo();
 ```
 
-| About this function | Description                                            |
-| :------------------ | :----------------------------------------------------- |
-| Use case            | To display all message and signal info in the DBC File |
-| Return value        | std::cout in terminal                                  |
+| About this function | Description                                                  |
+| :------------------ | :----------------------------------------------------------- |
+| Use case            | To display all message and signal info in the CAN database File |
+| Return value        | std::cout in terminal                                        |
 
 Sample usage of this function:
 
@@ -136,7 +142,7 @@ std::unordered_map<std::string, double> DbcParser::decode(unsigned long msgId, u
 
 | About this function | Description                                                  |
 | :------------------ | :----------------------------------------------------------- |
-| Use case            | To decode an entire message                                  |
+| Use case            | To decode a message payload                                  |
 | Input parameters    | (Message ID in decimal, An array of message payload, Message size) |
 | Return value        | std::unordered_map<Signal name, decoded value>               |
 
@@ -161,7 +167,7 @@ double DbcParser::decodeSignalOnRequest(unsigned long msgId, unsigned char payLo
 
 | About this function | Description                                                  |
 | :------------------ | :----------------------------------------------------------- |
-| Use case            | To decode a specific signal under a message                  |
+| Use case            | To decode a specific signal under a message payload          |
 | Input parameters    | (Message ID in decimal, An array of message payload, Message size, Signal name) |
 | Return value        | A decoded value of type double                               |
 
@@ -188,8 +194,8 @@ unsigned int DbcParser::encode(unsigned long msgId,
 
 | About this function | Description                                                  |
 | :------------------ | :----------------------------------------------------------- |
-| Use case            | To encode an entire message                                  |
-| Input parameters    | (Message ID in decimal, An vector of pair of signal name and physical value, A fixed size 8 slots array that contains the encoded result) |
+| Use case            | To encode a CAN message payload                              |
+| Input parameters    | (Message ID in decimal, An vector of pair of signal name and physical value, A fixed size 8 slots array that contains the encoded payload) |
 | Return value        | Message size of the encoded payload                          |
 
 Sample usage of this function:
@@ -211,7 +217,11 @@ The function encodes one or more signals at once into a single message payload. 
 
 ## Resources
 
+This tool is developed with XL-Driver-Library in mind. The free-of-charge XL-Driver-Library is a universal programming interface you can use to create your own applications while accessing Vector’s powerful hardware interfaces. 
+
 Reference PDF for CAN bus [DBC File Format Documentation](http://mcu.so/Microcontroller/Automotive/dbc-file-format-documentation_compress.pdf) Version 1.0.5 by Vector Informatik GmbH.
+
+[User Manual](https://cdn.vector.com/cms/content/products/XL_Driver_Library/Docs/XL_Driver_Library_Manual_EN.pdf) of [XL-Driver-Library](https://www.vector.com/int/en/products/products-a-z/libraries-drivers/xl-driver-library/#) by Vector Informatik GmbH.
 
 
 

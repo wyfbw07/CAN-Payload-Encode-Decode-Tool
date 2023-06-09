@@ -8,10 +8,11 @@
 #ifndef SIGNAL_H
 #define SIGNAL_H
 
-#include <limits>
 #include <string>
 #include <vector>
+#include <limits>
 #include <iosfwd>
+#include <unordered_map>
 #include "dbc_parser_helper.hpp"
 
 constexpr int MAX_MSG_LEN = 8;
@@ -50,17 +51,17 @@ public:
 	ValueTypes getValueTypes() const { return valueType; }
 	// Get names of all the nodes that receives this signal
 	std::vector<std::string> getReceiversName() const { return receiversName; }
-    // Convert the signals raw value into the signal's physical value and vice versa
+	// Convert the signals raw value into the signal's physical value and vice versa
 	double decodeSignal(unsigned char rawPayload[MAX_MSG_LEN], unsigned int messageSize);
-    uint64_t encodeSignal(double& physicalValue);
-    // Parse signal value descrption
-    std::istream& parseSignalValueDescription(std::istream& in);
+	uint64_t encodeSignal(double& physicalValue);
+	// Parse signal value descrption
+	std::istream& parseSignalValueDescription(std::istream& in);
 	// Operator overload, allows parsing of signals info
 	friend std::istream& operator>>(std::istream& in, Signal& sig);
 
 private:
 
-    typedef std::unordered_map<double, std::string>::iterator valueDescriptions_iterator;
+	typedef std::unordered_map<double, std::string>::iterator valueDescriptions_iterator;
 	// Name of the signal
 	std::string name{};
 	// Represents the physical unit of the signal, which is a string type
@@ -83,19 +84,19 @@ private:
 	ValueTypes valueType = ValueTypes::NotSet;
 	// Names of all the nodes that receives this signal
 	std::vector<std::string> receiversName{};
-    // Signal value descriptions: define encodings for specific signal raw values
-    // <physical value, label of the value>
-    std::unordered_map<double, std::string> valueDescriptions;
+	// Signal value descriptions: define encodings for specific signal raw values
+	// <physical value, label of the value>
+	std::unordered_map<double, std::string> valueDescriptions;
 	// Helper functions that are essential to parsing
-    std::vector<std::string>& splitWithDeliminators(const std::string& str,
-                                                    char delimiter,
-                                                    std::vector<std::string>& elems) {
+	std::vector<std::string>& splitWithDeliminators(const std::string& str,
+		char delimiter,
+		std::vector<std::string>& elems) {
 		DbcParserHelper::splitWithDeliminators(str, delimiter, elems);
-        return elems;
+		return elems;
 	}
-    std::string& trimLeadingAndTrailingChar(std::string& str, const char& toTrim) {
-        return DbcParserHelper::trimLeadingAndTrailingChar(str, toTrim);
-    }
+	std::string& trimLeadingAndTrailingChar(std::string& str, const char& toTrim) {
+		return DbcParserHelper::trimLeadingAndTrailingChar(str, toTrim);
+	}
 	std::string binToHex(const std::string& s) {
 		return DbcParserHelper::binToHex(s);
 	}

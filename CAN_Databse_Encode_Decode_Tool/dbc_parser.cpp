@@ -13,20 +13,20 @@
 
 void DbcParser::loadAndParseFromFile(std::istream& in) {
 	std::string line;
-    std::string lineInitial;
+	std::string lineInitial;
 	// Read the file line by line
-    while (in >> lineInitial) {
+	while (in >> lineInitial) {
 		// Get the first word in the line
-        if (lineInitial == "NS_") {
-            while (in >> lineInitial && !(lineInitial == "BS_:" || lineInitial == "BS_"));
-        }
+		if (lineInitial == "NS_") {
+			while (in >> lineInitial && !(lineInitial == "BS_:" || lineInitial == "BS_"));
+		}
 		// Look for messages
 		if (lineInitial == "BO_") {
 			// Parse the message
 			Message msg;
 			in >> msg;
 			// Message name uniqueness check. Message names by definition need to be unqiue within the file
-            messageLibrary_iterator data_itr = messageLibrary.find(msg.getId());
+			messageLibrary_iterator data_itr = messageLibrary.find(msg.getId());
 			if (data_itr == messageLibrary.end()) {
 				// Uniqueness check passed, store the message
 				messageLibrary.insert(std::make_pair(msg.getId(), msg));
@@ -39,28 +39,28 @@ void DbcParser::loadAndParseFromFile(std::istream& in) {
 		}
 		// Look for value descriptions
 		else if (lineInitial == "VAL_") {
-            // There are two types of value descriptions: Environment variable value descriptions and Signal value descriptions
-            // Signal value descriptions define encodings for specific signal raw values.
-            // The value descriptions for environment variables provide textual representations of specific values of the variable.
-            unsigned int messageId;
-            in >> messageId;
-            if (messageId != 0) {
-                // If there exists a message ID, this is a signal value description
-                messageLibrary_iterator messages_itr = messageLibrary.find(messageId);
-                if (messages_itr != messageLibrary.end()) {
-                    // Search for signals to store signal value description
-                    messages_itr->second.parseSignalValueDescription(in);
-                }
-                else {
-                    throw std::invalid_argument("Cannot find message (ID: " + std::to_string(messageId) + ") for a given signal value description. Parse Failed.");
-                }
-            }
+			// There are two types of value descriptions: Environment variable value descriptions and Signal value descriptions
+			// Signal value descriptions define encodings for specific signal raw values.
+			// The value descriptions for environment variables provide textual representations of specific values of the variable.
+			unsigned int messageId;
+			in >> messageId;
+			if (messageId != 0) {
+				// If there exists a message ID, this is a signal value description
+				messageLibrary_iterator messages_itr = messageLibrary.find(messageId);
+				if (messages_itr != messageLibrary.end()) {
+					// Search for signals to store signal value description
+					messages_itr->second.parseSignalValueDescription(in);
+				}
+				else {
+					throw std::invalid_argument("Cannot find message (ID: " + std::to_string(messageId) + ") for a given signal value description. Parse Failed.");
+				}
+			}
 		}
 		else {
 			// Reserved cases
 		}
-        // Skip the rest of the line for uninterested data and make sure we can get a whole new line in the next iteration
-        in.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+		// Skip the rest of the line for uninterested data and make sure we can get a whole new line in the next iteration
+		in.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 	}
 }
 
@@ -121,55 +121,55 @@ void DbcParser::printDbcInfo() {
 
 // If no specific signal name is requested, decode all signals by default
 std::unordered_map<std::string, double> DbcParser::decode(unsigned long msgId, unsigned char payLoad[], unsigned int dlc) {
-    messageLibrary_iterator data_itr_msg = messageLibrary.find(msgId);
-    std::unordered_map<std::string, double> result;
-    if (data_itr_msg == messageLibrary.end()) {
-        std::cout << "No matching message found. Decode failed. An empty result is returned.\n" << std::endl;
-    }
-    else {
-        result = messageLibrary[msgId].decode(payLoad, dlc);
-    }
+	messageLibrary_iterator data_itr_msg = messageLibrary.find(msgId);
+	std::unordered_map<std::string, double> result;
+	if (data_itr_msg == messageLibrary.end()) {
+		std::cout << "No matching message found. Decode failed. An empty result is returned.\n" << std::endl;
+	}
+	else {
+		result = messageLibrary[msgId].decode(payLoad, dlc);
+	}
 	return result;
 }
 
 // If specific signal name is requested, decode all signals but only displays decoded value of the requested signal
 double DbcParser::decodeSignalOnRequest(unsigned long msgId, unsigned char payLoad[], unsigned int dlc, std::string sigName) {
-    messageLibrary_iterator data_itr_msg = messageLibrary.find(msgId);
-    if (data_itr_msg == messageLibrary.end()) {
-        std::cout << "No matching message found. Decode failed. A NULL is returned.\n" << std::endl;
-        return NULL;
-    }
-    else {
-        std::unordered_map<std::string, double> result;
-        result = messageLibrary[msgId].decode(payLoad, dlc);
-        std::unordered_map<std::string, double>::iterator data_itr_sig = result.find(sigName);
-        if (data_itr_sig == result.end()) {
-            std::cout << "No matching signal found. Decode failed. A NULL is returned.\n" << std::endl;
-            return NULL;
-        }
-        else {
-            // Print decoded signal info
-            // std::cout << "  Signal: " << msgName << " " << data_itr->second << std::endl;
-            return data_itr_sig->second;
-        }
-    }
+	messageLibrary_iterator data_itr_msg = messageLibrary.find(msgId);
+	if (data_itr_msg == messageLibrary.end()) {
+		std::cout << "No matching message found. Decode failed. A NULL is returned.\n" << std::endl;
+		return NULL;
+	}
+	else {
+		std::unordered_map<std::string, double> result;
+		result = messageLibrary[msgId].decode(payLoad, dlc);
+		std::unordered_map<std::string, double>::iterator data_itr_sig = result.find(sigName);
+		if (data_itr_sig == result.end()) {
+			std::cout << "No matching signal found. Decode failed. A NULL is returned.\n" << std::endl;
+			return NULL;
+		}
+		else {
+			// Print decoded signal info
+			// std::cout << "  Signal: " << msgName << " " << data_itr->second << std::endl;
+			return data_itr_sig->second;
+		}
+	}
 }
 
 unsigned int DbcParser::encode(unsigned long msgId,
-                               std::vector<std::pair<std::string, double> > signalsToEncode,
-                               unsigned char encodedPayload[MAX_MSG_LEN]) {
-    unsigned int dlc = 0;
-    messageLibrary_iterator data_itr_msg = messageLibrary.find(msgId);
-    if (data_itr_msg == messageLibrary.end()) {
-        std::cout << "No matching message found. Encode failed. An empty result is returned.\n" << std::endl;
-    }
-    else {
-        dlc = messageLibrary[msgId].encode(signalsToEncode, encodedPayload);
-        // Print encoded message info
+							   std::vector<std::pair<std::string, double> > signalsToEncode,
+							   unsigned char encodedPayload[MAX_MSG_LEN]) {
+	unsigned int dlc = 0;
+	messageLibrary_iterator data_itr_msg = messageLibrary.find(msgId);
+	if (data_itr_msg == messageLibrary.end()) {
+		std::cout << "No matching message found. Encode failed. An empty result is returned.\n" << std::endl;
+	}
+	else {
+		dlc = messageLibrary[msgId].encode(signalsToEncode, encodedPayload);
+		// Print encoded message info
 //         std::cout << "Encoded message[" << messageLibrary[msgId].getId() << "]: " << messageLibrary[msgId].getName() << std::endl;
 //        for (short int i = 0; i < 8; i++) {
 //               std::cout << std::bitset<sizeof(encodedPayload[i])*8>(encodedPayload[i]) << std::endl;
 //         }
-    }
-    return dlc;
+	}
+	return dlc;
 }
