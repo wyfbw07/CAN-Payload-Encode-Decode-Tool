@@ -22,50 +22,6 @@ This tool uses exceptions to eraise errors. As a result, running and calling fun
 
 
 
-## Sample Usage
-
-Not all input arguments must be provide to run. There are three use cases available.
-
-- **Parse DBC File Only:**
-
-	```c++
-	DbcParser dbcFile;
-	dbcFile.parse("/Users/filelocation/XVehicle.dbc");
-	```
-	
-	By only providing the DBC file address, the program would parse and extract message and signals info in the file.
-	
-	<u>Parse function should be called ONLY once.</u> Recalling of this function is not allowed. If you did modifications to your DBC file and want to reload/reparse the database, destroy the previous DbcParser class instance and create a new one to continue.
-	
-- **Decode an Entire Message:**
-
-  ```c++
-  // Prepare data
-  unsigned int dlc = 6;
-  unsigned int msgId = 168;
-  unsigned char rawPayload[8] = {0xe8, 0x0, 0x0, 0x0, 0x0, 0x0};
-  // Decode
-  dbcFile.decode(msgId, rawPayload, dlc);
-  ```
-
-  Additionally a message ID in decimal and its payload can be provided. You cannot decode a messsage before parsing the DBC file.
-
-- **Decode a Specific Signal Under a Message:**
-
-	```c++
-	// Prepare data
-	unsigned int dlc = 6;
-	unsigned int msgId = 168;
-	unsigned char rawPayload[8] = {0xe8, 0x0, 0x0, 0x0, 0x0, 0x0};
-	std::string sigName = "EngineTemp";
-	// Decode
-	dbcFile.decodeSignalOnRequest(msgId, rawPayload, dlc, sigName);
-	```
-	
-	Lastly a signal name can be provided to filter out the decoded value of that signal. You cannot decode a messsage before parsing the DBC file.
-	
-	
-
 ## Function Calls
 
 ### Load and Parse DBC File
@@ -86,7 +42,7 @@ DbcParser dbcFile;
 dbcFile.parse("/Users/filelocation/XVehicle.dbc");
 ```
 
-A instance of the class DbcParser must be created first, and use the parse function to load and parse the DBC file. All messages and signals info will then be stored.
+A instance of the class DbcParser must be created first, and use the parse function to load and parse the DBC file. All messages and signals info will then be stored. You cannot decode or encode a messsage before parsing the DBC file.
 
 Again, <u>this function can be called ONLY once.</u> It does not allow repeated calls of this function. There is little use cases that you would want to re-parse the file. However if you do want to re-parse, destroy the existing class instance and create a new one to parse again.
 
