@@ -12,7 +12,7 @@ No arguments is required to run. Edit properties in main to use this tool.
 
 ### On Other Operating Systems
 
-You will need to use the these source files and create a new project on your own to build. This tool has been tested on Visual Studio 17.6.0 and Qt Creator 6.4.3 on Windows 11 64bit.
+You will need to use the source files and create a new project on your own to build. This tool has been tested on Visual Studio 17.6.0 and Qt Creator 6.4.3 on Windows 11 64bit.
 
 
 
