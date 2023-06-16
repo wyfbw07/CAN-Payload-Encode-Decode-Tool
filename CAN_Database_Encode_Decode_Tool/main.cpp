@@ -17,7 +17,7 @@ int main(int argc, char* argv[])
 	DbcParser dbcFile;
 	try {
 		// Load file from path. Parse and store the content
-		dbcFile.parse("/Users/wyfbw07/Downloads/Test_DBC_Files/VehicleSystem.dbc");
+		dbcFile.parse("/Users/wyfbw07/Downloads/Test_Database_Files/VehicleSystem.dbc");
 		// Display DBC info
 		dbcFile.printDbcInfo();
 		// MARK: - Function call choices

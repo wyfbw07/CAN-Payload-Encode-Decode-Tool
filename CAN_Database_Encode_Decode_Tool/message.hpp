@@ -28,7 +28,7 @@ class Message : DbcParserHelper {
 	unsigned int messageSize{};
 	// String containing the name of the Sender of this Message if one exists in the DB
 	std::string senderName{};
-	// A hash table containing all Signals that are present in this Message
+	// A hash table containing all Signals that are present in this Message <Signal name, Signal object>
 	std::unordered_map<std::string, Signal> signalsLibrary{};
 
 public:

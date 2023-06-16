@@ -41,7 +41,8 @@ void DbcParser::loadAndParseFromFile(std::istream& in) {
 		else if (lineInitial == "VAL_") {
 			// There are two types of value descriptions: Environment variable value descriptions and Signal value descriptions
 			// Signal value descriptions define encodings for specific signal raw values.
-			// The value descriptions for environment variables provide textual representations of specific values of the variable.
+			// Environment variable value descriptions provide textual representations of specific values of the variable.
+            // Check "DBC File Format Documentation" if confused
 			unsigned int messageId;
 			in >> messageId;
 			if (messageId != 0) {
@@ -57,7 +58,7 @@ void DbcParser::loadAndParseFromFile(std::istream& in) {
 			}
 		}
 		else {
-			// Reserved cases
+			// Reserved cases for parsing other info in the DBC file
 		}
 		// Skip the rest of the line for uninterested data and make sure we can get a whole new line in the next iteration
 		in.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
@@ -79,13 +80,13 @@ bool DbcParser::parse(const std::string& filePath) {
 	}
 	// Parse complete, mark as successful
 	dbcFile.close();
-	emptyLibrary = false;
+	isEmptyLibrary = false;
 	return true;
 }
 
 // Displays DBC file info
 void DbcParser::printDbcInfo() {
-	if (emptyLibrary) {
+	if (isEmptyLibrary) {
 		std::cout << "Empty Library. Load and parse DBC file first." << std::endl;
 		return;
 	}

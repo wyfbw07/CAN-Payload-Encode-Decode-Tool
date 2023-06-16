@@ -12,7 +12,7 @@
 #include <algorithm>
 #include "signal.hpp"
 
- // Cross platform definition of byteswap
+// Cross platform definition of byteswap
 #ifdef _MSC_VER
 
 #define bswap_32(x) _byteswap_ulong(x)
@@ -145,7 +145,6 @@ double Signal::decodeSignal(unsigned char rawPayload[MAX_MSG_LEN], unsigned int 
         std::istringstream converter(concatenatedPayload);
         converter >> std::hex >> payload;
         // Decode
-        // std::cout << "" << std::bitset<sizeof(payload)*8>(payload) << std::endl;
         uint8_t* data = (uint8_t*)&payload;
         currentBit = startBit;
         // Access the corresponding byte and make sure we are reading a bit that is 1

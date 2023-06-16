@@ -35,11 +35,10 @@ public:
 private:
 
 	typedef std::unordered_map<unsigned long, Message>::iterator messageLibrary_iterator;
-	// A bool to indicate whether DBC file has been loaded or not
-	bool emptyLibrary = true;
 	// This list contains all the messages which got parsed from the DBC-File
-	typedef std::vector<Message*> messages_t;
-	messages_t messagesInfo;
+    std::vector<Message*> messagesInfo;
+    // A bool to indicate whether DBC file has been loaded or not
+    bool isEmptyLibrary = true;
 	// A hash table that stores all info of messages. <Message id, Message object>
 	std::unordered_map<unsigned long, Message> messageLibrary;
 	// Function used to parse DBC file
