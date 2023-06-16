@@ -1,4 +1,4 @@
-# CAN Database Encode Decode Tool
+# CAN Database (DBC) Encode Decode Tool
 
 
 
