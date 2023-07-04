@@ -72,7 +72,7 @@ For signal classes, these information will be parsed:
 ### Print DBC File Info
 
 ```c++
-void DbcParser::printDbcInfo();
+friend std::ostream& operator<<(std::ostream& os, const DbcParser& dbcFile);
 ```
 
 | About this function | Description                                                  |
@@ -83,10 +83,10 @@ void DbcParser::printDbcInfo();
 Sample usage of this function:
 
 ```c++
-dbcFile.printDbcInfo();
+std::cout << dbcFile;
 ```
 
-Use this function to display DBC file info once a DBC file is loaded and parsed. Messages and signals info would appear in terminal or Xcode debugger terminal.
+Display DBC file info once a DBC file is loaded and parsed. Messages and signals info would appear in terminal.
 
 
 
@@ -111,7 +111,7 @@ unsigned char rawPayload[8] = {0xe8, 0x0, 0x0, 0x0, 0x0, 0x0};
 dbcFile.decode(168, rawPayload, 6);
 ```
 
-The function will return an unordered map: <Signal name, decoded value>, where first is signal name, and second is the decoded value for each signal. The function checks input payload length, returns decode result, and no longer prints decoded information by default.
+The function will return an unordered map: <Signal name, decoded value>, where the first is signal name, and the second is the decoded value for each signal. The function checks input payload length, returns decode result, and no longer prints decoded information by default.
 
 
 
@@ -124,7 +124,7 @@ double DbcParser::decodeSignalOnRequest(unsigned long msgId, unsigned char payLo
 | About this function | Description                                                  |
 | :------------------ | :----------------------------------------------------------- |
 | Use case            | To decode a specific signal under a message payload          |
-| Input parameters    | (Message ID in decimal, An array of message payload, Message size, Signal name) |
+| Input parameters    | (Message ID, An array of message payload, Message size, Signal name) |
 | Return value        | A decoded value of type double                               |
 
 Sample usage of this function:
@@ -151,7 +151,7 @@ unsigned int DbcParser::encode(unsigned long msgId,
 | About this function | Description                                                  |
 | :------------------ | :----------------------------------------------------------- |
 | Use case            | To encode a CAN message payload                              |
-| Input parameters    | (Message ID in decimal, An vector of pair of signal name and physical value, A fixed size 8 slots array that contains the encoded payload) |
+| Input parameters    | (Message ID, An vector of pair of signal name and physical value, A fixed size 8 slots array that contains the encoded payload) |
 | Return value        | Message size of the encoded payload                          |
 
 Sample usage of this function:
@@ -167,7 +167,7 @@ signalsToEncode.push_back(std::make_pair("EngSpeed_Second", 1535));
 encodedDlc = dbcFile.encode(168, signalsToEncode, encodedPayload);
 ```
 
-The function encodes one or more signals at once into a single message payload. The fixed size encodedPayload array contains the generated payload once the function has been called. An additional value is returned to specify the message size of the encoded payload.
+The function encodes one or more signals at once into a single message payload. The fixed size encodedPayload array contains the encoded payload once the function has been called. An additional value is returned to specify the message size of the encoded payload.
 
 
 

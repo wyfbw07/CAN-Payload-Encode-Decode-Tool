@@ -84,40 +84,40 @@ bool DbcParser::parse(const std::string& filePath) {
 	return true;
 }
 
-// Displays DBC file info
-void DbcParser::printDbcInfo() {
-	if (isEmptyLibrary) {
-		std::cout << "Empty Library. Load and parse DBC file first." << std::endl;
-		return;
-	}
-	// Print details for each signal and message
-	for (auto message : messagesInfo) {
-		std::cout << "-------------------------------" << std::endl;
-		std::cout << message->getName() << " " << (*message).getId() << std::endl;
-		for (auto& sig : message->getSignalsInfo()) {
-			std::cout << "Signal: " << sig.second.getName() << "  ";
-			std::cout << sig.second.getStartBit() << "," << sig.second.getSignalSize() << std::endl;
-			std::cout << "(" << sig.second.getFactor() << ", " << sig.second.getOffset() << ")" << std::endl;
-			std::cout << "[" << sig.second.getMinValue() << "," << sig.second.getMaxValue() << "]" << std::endl;
-			if (sig.second.getByteOrder() == ByteOrders::Intel) {
-				std::cout << "INTEL" << std::endl;
-			}
-			else {
-				std::cout << "MOTO" << std::endl;
-			}
-			if (sig.second.getValueTypes() == ValueTypes::Unsigned) {
-				std::cout << "UNSIGNED" << std::endl;
-			}
-			else {
-				std::cout << "SIGNED" << std::endl;
-			}
-			if (sig.second.getUnit() != "") {
-				std::cout << sig.second.getUnit() << std::endl;
-			}
-			std::cout << std::endl;
-		}
-	}
-	std::cout << "-------------------------------" << std::endl;
+std::ostream& operator<<(std::ostream& os, const DbcParser& dbcFile){
+    if (dbcFile.isEmptyLibrary) {
+        std::cout << "Empty Library. Load and parse DBC file first." << std::endl;
+        return os;
+    }
+    // Print details for each signal and message
+    for (auto message : dbcFile.messagesInfo) {
+        std::cout << "-------------------------------" << std::endl;
+        std::cout << message->getName() << " " << (*message).getId() << std::endl;
+        for (auto& sig : message->getSignalsInfo()) {
+            std::cout << "Signal: " << sig.second.getName() << "  ";
+            std::cout << sig.second.getStartBit() << "," << sig.second.getSignalSize() << std::endl;
+            std::cout << "(" << sig.second.getFactor() << ", " << sig.second.getOffset() << ")" << std::endl;
+            std::cout << "[" << sig.second.getMinValue() << "," << sig.second.getMaxValue() << "]" << std::endl;
+            if (sig.second.getByteOrder() == ByteOrders::Intel) {
+                std::cout << "INTEL" << std::endl;
+            }
+            else {
+                std::cout << "MOTO" << std::endl;
+            }
+            if (sig.second.getValueTypes() == ValueTypes::Unsigned) {
+                std::cout << "UNSIGNED" << std::endl;
+            }
+            else {
+                std::cout << "SIGNED" << std::endl;
+            }
+            if (sig.second.getUnit() != "") {
+                std::cout << sig.second.getUnit() << std::endl;
+            }
+            std::cout << std::endl;
+        }
+    }
+    std::cout << "-------------------------------" << std::endl;
+    return os;
 }
 
 // If no specific signal name is requested, decode all signals by default
