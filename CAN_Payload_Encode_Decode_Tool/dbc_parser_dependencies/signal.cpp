@@ -18,6 +18,15 @@ std::istream& operator>>(std::istream& in, Signal& sig) {
     // A deliminator that is useless
     std::string rawString;
     in >> rawString;
+    if (rawString != ":") {
+        sig.sigSignalType = SignalType::Multiplexed;
+        // in >> rawString; // Comment the exception and uncomment this line if you still want to proceed.
+        throw std::invalid_argument("Parse failed. Signal \"" + sig.name + "\" may not be a normal signal."
+                                    + " Note: This tool does not currently support parsing multiplexer and multiplexed signals.");
+    }
+    else {
+        sig.sigSignalType = SignalType::Normal;
+    }
     // Read start bit, signal size, byte order and value type
     in >> sig.startBit;
     in.ignore(1);
@@ -28,25 +37,25 @@ std::istream& operator>>(std::istream& in, Signal& sig) {
     in >> rawByteOrderValue;
     // 0=big endian, 1=little endian
     if (rawByteOrderValue == 0) {
-        sig.byteOrder = ByteOrders::Motorola;
+        sig.sigByteOrder = ByteOrder::Motorola;
     }
     else if (rawByteOrderValue == 1) {
-        sig.byteOrder = ByteOrders::Intel;
+        sig.sigByteOrder = ByteOrder::Intel;
     }
     else {
-        throw std::invalid_argument("Unable to parse byte order of signal: " + sig.name + ". Parse failed.");
+        throw std::invalid_argument("Parse failed. Unable to parse byte order of signal \"" + sig.name + "\".");
     }
     // Read value type
     char rawChar;
     in >> rawChar;
     if (rawChar == '+') {
-        sig.valueType = ValueTypes::Unsigned;
+        sig.sigValueType = ValueType::Unsigned;
     }
     else if (rawChar == '-') {
-        sig.valueType = ValueTypes::Signed;
+        sig.sigValueType = ValueType::Signed;
     }
     else {
-        throw std::invalid_argument("Unable to parse value type of signal: " + sig.name + ". Parse failed.");
+        throw std::invalid_argument("Parse failed. Unable to parse value type of signal \"" + sig.name + "\".");
     }
     // Read factor and offset
     in.ignore(2);
@@ -60,14 +69,36 @@ std::istream& operator>>(std::istream& in, Signal& sig) {
     in >> sig.maxValue;
     in.ignore(1);
     // Read unit, if there exist one
-    in >> rawString;
-    if (rawString != "\"\"") {
-        sig.unit = sig.trimLeadingAndTrailingChar(rawString, '\"');
-    }
+    getline(in, rawString, '\"');
+    getline(in, rawString, '\"');
+    sig.unit = rawString;
     // Read destination nodes
     in >> rawString;
     if (rawString != "Vector__XXX") {
         sig.splitWithDeliminators(rawString, ',', sig.receiversName);
+    }
+    in.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    return in;
+}
+
+std::istream& Signal::parseSignalValueDescription(std::istream& in) {
+    std::string preamble;
+    // Parse signal value descriptions unitl hit the end of the line
+    while (in >> preamble && preamble != ";") {
+        // Get description for each signal value
+        double sigValue = std::stod(preamble);
+        std::string rawDescription;
+        // Remove double quotes
+        in >> std::quoted(rawDescription);
+        // Uniqueness check
+        valueDescriptions_iterator description_itr = valueDescriptions.find(sigValue);
+        if (description_itr == valueDescriptions.end()) {
+            // Store signal value description
+            valueDescriptions.insert(std::make_pair(sigValue, rawDescription));
+        }
+        else {
+            throw std::invalid_argument("Parse failed. Found duplicated value description of signal \"" + name + "\".");
+        }
     }
     return in;
 }
@@ -76,7 +107,7 @@ double Signal::decodeSignal(unsigned char rawPayload[MAX_MSG_LEN], unsigned int 
     int64_t decodedValue = 0;
     unsigned int currentBit = 0;
     // Intel
-    if (byteOrder == ByteOrders::Intel) {
+    if (sigByteOrder == ByteOrder::Intel) {
         // Change endianness
         int64_t payload = 0;
         for (int i = MAX_MSG_LEN; i > 0; i--) {
@@ -90,7 +121,7 @@ double Signal::decodeSignal(unsigned char rawPayload[MAX_MSG_LEN], unsigned int 
         for (unsigned short bitpos = 0; bitpos < signalSize; bitpos++) {
             if (data[currentBit / CHAR_BIT] & (1 << (currentBit % CHAR_BIT))) {
                 // Add dominant bit
-                if (byteOrder == ByteOrders::Intel) {
+                if (sigByteOrder == ByteOrder::Intel) {
                     decodedValue |= (1ULL << bitpos);
                 }
             }
@@ -124,7 +155,7 @@ uint64_t Signal::encodeSignal(double& physicalValue) {
     uint64_t encodedValue = 0;
     unsigned int rawValue = (physicalValue - offset) / factor;
     uint8_t* rawPayload = (uint8_t*)&rawValue;
-    if (byteOrder == ByteOrders::Intel) { // Intel
+    if (sigByteOrder == ByteOrder::Intel) { // Intel
         // Encode
         for (unsigned short bitpos = 0; bitpos < signalSize; bitpos++) {
             // Access the corresponding byte and make sure we are reading a bit that is 1
@@ -136,7 +167,7 @@ uint64_t Signal::encodeSignal(double& physicalValue) {
         }
         // Change endianness
         unsigned char encodedPayload[MAX_MSG_LEN];
-        for (short i = 8 - 1; i >= 0; i--) {
+        for (short i = MAX_MSG_LEN - 1; i >= 0; i--) {
             encodedPayload[i] = encodedValue % 256; // get the last byte
             encodedValue /= 256; // get the remainder
         }
@@ -165,26 +196,4 @@ uint64_t Signal::encodeSignal(double& physicalValue) {
         }
     }
     return encodedValue;
-}
-
-std::istream& Signal::parseSignalValueDescription(std::istream& in) {
-    std::string preamble;
-    // Parse signal value descriptions unitl hit the end of the line
-    while (in >> preamble && preamble != ";") {
-        // Get description for each signal value
-        double sigValue = std::stod(preamble);
-        std::string rawDescription;
-        // Remove double quotes
-        in >> std::quoted(rawDescription);
-        // Uniqueness check
-        valueDescriptions_iterator description_itr = valueDescriptions.find(sigValue);
-        if (description_itr == valueDescriptions.end()) {
-            // Store signal value description
-            valueDescriptions.insert(std::make_pair(sigValue, rawDescription));
-        }
-        else {
-            throw std::invalid_argument("Found duplicated value description of signal: " + name + ". Parse failed.");
-        }
-    }
-    return in;
 }

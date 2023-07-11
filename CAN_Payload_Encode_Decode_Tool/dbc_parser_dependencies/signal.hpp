@@ -18,15 +18,20 @@
 constexpr int MAX_MSG_LEN = 8;
 constexpr int MAX_BIT_INDEX_uint64_t = (sizeof(uint64_t) * CHAR_BIT) - 1;
 
-enum class ByteOrders {
+enum class ByteOrder {
 	NotSet,
 	Intel,
 	Motorola
 };
-enum class ValueTypes {
+enum class ValueType {
 	NotSet,
 	Signed,
 	Unsigned
+};
+enum class SignalType {
+    NotSet,
+    Normal,
+    Multiplexed
 };
 
 // Respresents a signal. Contains all signal info.
@@ -47,8 +52,8 @@ public:
 	unsigned int getStartBit() const { return startBit; }
 	unsigned int getSignalSize() const { return signalSize; }
 	// Get byte order: Intel (little-endian) or Motorola (Big-endian)
-	ByteOrders getByteOrder() const { return byteOrder; }
-	ValueTypes getValueTypes() const { return valueType; }
+	ByteOrder getByteOrder() const { return sigByteOrder; }
+	ValueType getValueTypes() const { return sigValueType; }
 	// Get names of all the nodes that receives this signal
 	std::vector<std::string> getReceiversName() const { return receiversName; }
 	// Convert the signals raw value into the signal's physical value and vice versa
@@ -79,9 +84,10 @@ private:
 	// The signal_size specifies the size of the signal in bits
 	unsigned int signalSize{};
 	// Byte order can be either Intel (little-endian) or Motorola (Big-endian)
-	ByteOrders byteOrder = ByteOrders::NotSet;
+	ByteOrder sigByteOrder = ByteOrder::NotSet;
 	// Value order can be either unsigned or signed
-	ValueTypes valueType = ValueTypes::NotSet;
+	ValueType sigValueType = ValueType::NotSet;
+    SignalType sigSignalType = SignalType::NotSet;
 	// Names of all the nodes that receives this signal
 	std::vector<std::string> receiversName{};
 	// Signal value descriptions: define encodings for specific signal raw values
@@ -96,12 +102,6 @@ private:
 	}
 	std::string& trimLeadingAndTrailingChar(std::string& str, const char& toTrim) {
 		return DbcParserHelper::trimLeadingAndTrailingChar(str, toTrim);
-	}
-	std::string binToHex(const std::string& s) {
-		return DbcParserHelper::binToHex(s);
-	}
-	std::string hexToBin(const std::string& s) {
-		return DbcParserHelper::hexToBin(s);
 	}
 };
 

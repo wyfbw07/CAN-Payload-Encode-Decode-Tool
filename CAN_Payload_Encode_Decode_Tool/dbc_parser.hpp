@@ -13,7 +13,7 @@
 #include <sstream>
 #include <vector>
 #include <unordered_map>
-#include "message.hpp"
+#include "dbc_parser_dependencies/message.hpp"
 
 class DbcParser {
 

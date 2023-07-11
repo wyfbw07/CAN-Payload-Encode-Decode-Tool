@@ -9,7 +9,6 @@
 #include <stdexcept>
 #include "dbc_parser.hpp"
 
-
 int main()
 {
 	int operationChoice = 3;
@@ -17,7 +16,8 @@ int main()
 	DbcParser dbcFile;
 	try {
 		// Load file from path. Parse and store the content
-		dbcFile.parse("/Users/wyfbw07/Downloads/Volvo/Test_Database_Files/VehicleSystem.dbc");
+        dbcFile.parse("/Users/wyfbw07/Downloads/Volvo/Test_Database_Files/exampleCAN_medium.dbc");
+		// dbcFile.parse("/Users/wyfbw07/Downloads/Volvo/Test_Database_Files/exampleCAN_large.dbc");
 		// Display DBC info
         std::cout << dbcFile;
 		// MARK: - Function call choices
@@ -27,8 +27,8 @@ int main()
 			// Decode
 			int dlc = 8;
 			int msgId = 258;
-//			unsigned char rawPayload[8] = { 0x2d, 0xff, 0xc8, 0x0f, 0x0, 0x0, 0x0, 0x0 };
-            unsigned char rawPayload[8] = { 0x2d, 0xff, 0x78, 0x0a, 0x0, 0x0, 0x0, 0x0 };
+            unsigned char rawPayload[8] = { 0x2d, 0xff, 0xc8, 0x0f, 0x0, 0x0, 0x0, 0x0 };
+            // unsigned char rawPayload[8] = { 0x2d, 0xff, 0x78, 0x0a, 0x0, 0x0, 0x0, 0x0 };
 			std::unordered_map<std::string, double> result = dbcFile.decode(msgId, rawPayload, dlc);
 			// Print decoded message info
 			std::cout << "Decoded signal values: \n";

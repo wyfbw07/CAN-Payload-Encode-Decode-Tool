@@ -72,6 +72,14 @@
 				D33919742A0A342E002DD719 /* main.cpp */,
 				D33919762A0A342E002DD719 /* dbc_parser.hpp */,
 				D33919722A0A342E002DD719 /* dbc_parser.cpp */,
+				D383DE862A5BF59C00553712 /* dbc_parser_dependencies */,
+			);
+			path = CAN_Payload_Encode_Decode_Tool;
+			sourceTree = "<group>";
+		};
+		D383DE862A5BF59C00553712 /* dbc_parser_dependencies */ = {
+			isa = PBXGroup;
+			children = (
 				D33919732A0A342E002DD719 /* dbc_parser_helper.hpp */,
 				D339196F2A0A342E002DD719 /* dbc_parser_helper.cpp */,
 				D33919712A0A342E002DD719 /* message.hpp */,
@@ -79,7 +87,7 @@
 				D33919772A0A342E002DD719 /* signal.hpp */,
 				D33919752A0A342E002DD719 /* signal.cpp */,
 			);
-			path = CAN_Payload_Encode_Decode_Tool;
+			path = dbc_parser_dependencies;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */

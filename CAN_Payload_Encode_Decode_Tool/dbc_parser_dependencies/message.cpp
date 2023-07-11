@@ -49,7 +49,7 @@ std::istream& operator>>(std::istream& in, Message& msg) {
 		}
 		else {
 			// Uniqueness check failed, then something must be wrong with the DBC file, parse failed
-			throw std::invalid_argument("Signal \"" + sig.getName() + "\" has duplicates in the same message. Parse Failed.");
+			throw std::invalid_argument("Parse Failed. Signal \"" + sig.getName() + "\" has duplicates in the same message.");
 		}
 		// Update stream position after each signal read
 		posBeforePeek = in.tellg();
@@ -59,13 +59,27 @@ std::istream& operator>>(std::istream& in, Message& msg) {
 	return in;
 }
 
+std::istream& Message::parseSignalValueDescription(std::istream& in) {
+    // Search for corresponding signal to parse the value descriptions
+    std::string sigName;
+    in >> sigName;
+    signalsLibrary_iterator signals_itr = signalsLibrary.find(sigName);
+    if (signals_itr != signalsLibrary.end()) {
+        signals_itr->second.parseSignalValueDescription(in);
+    }
+    else {
+        throw std::invalid_argument("Parse failed. Cannot find signal: " + sigName + " in CAN database.");
+    }
+    return in;
+}
+
 // Create a hash table for all decoded signals
 std::unordered_map<std::string, double> Message::decode(unsigned char rawPayload[MAX_MSG_LEN], unsigned int dlc) {
 	// Check input payload length
 	// If the length of the input payload is different than what is required by the DBC file,
 	// reject and fail the decode operation
 	if (dlc != messageSize) {
-		throw std::invalid_argument("The data length of the input payload does not match with DBC info. Decode failed.");
+		throw std::invalid_argument("Decode failed. The data length of the input payload does not match with DBC info.");
 	}
 	// Decode
 	std::unordered_map<std::string, double> sigValues;
@@ -87,26 +101,13 @@ unsigned int Message::encode(std::vector<std::pair<std::string, double> > signal
 			encodedValue |= encodedValueOfSingleSignal;
 		}
 		else {
-			throw std::invalid_argument("Cannot find signal: " + signalsToEncode[i].first + " in CAN database. Encode failed.");
+			throw std::invalid_argument("Encode failed. Cannot find signal: " + signalsToEncode[i].first + " in CAN database.");
 		}
 	}
-	for (short i = 8 - 1; i >= 0; i--) {
+	for (short i = MAX_MSG_LEN - 1; i >= 0; i--) {
 		encodedPayload[i] = encodedValue % 256; // get the last byte
 		encodedValue /= 256; // get the remainder
 	}
 	return messageSize;
 }
 
-std::istream& Message::parseSignalValueDescription(std::istream& in) {
-	// Search for corresponding signal to parse the value descriptions
-	std::string sigName;
-	in >> sigName;
-	signalsLibrary_iterator signals_itr = signalsLibrary.find(sigName);
-	if (signals_itr != signalsLibrary.end()) {
-		signals_itr->second.parseSignalValueDescription(in);
-	}
-	else {
-		throw std::invalid_argument("Cannot find signal: " + sigName + " in CAN database. Parse failed.");
-	}
-	return in;
-}

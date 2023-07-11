@@ -98,13 +98,13 @@ std::ostream& operator<<(std::ostream& os, const DbcParser& dbcFile){
             std::cout << sig.second.getStartBit() << "," << sig.second.getSignalSize() << std::endl;
             std::cout << "(" << sig.second.getFactor() << ", " << sig.second.getOffset() << ")" << std::endl;
             std::cout << "[" << sig.second.getMinValue() << "," << sig.second.getMaxValue() << "]" << std::endl;
-            if (sig.second.getByteOrder() == ByteOrders::Intel) {
+            if (sig.second.getByteOrder() == ByteOrder::Intel) {
                 std::cout << "INTEL" << std::endl;
             }
             else {
                 std::cout << "MOTO" << std::endl;
             }
-            if (sig.second.getValueTypes() == ValueTypes::Unsigned) {
+            if (sig.second.getValueTypes() == ValueType::Unsigned) {
                 std::cout << "UNSIGNED" << std::endl;
             }
             else {
