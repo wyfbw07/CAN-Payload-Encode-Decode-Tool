@@ -92,7 +92,8 @@ std::istream& Message::parseSignalInitialValue(std::istream& in) {
 }
 
 // Create a hash table for all decoded signals
-std::unordered_map<std::string, double> Message::decode(unsigned char rawPayload[MAX_MSG_LEN], unsigned int dlc) {
+std::unordered_map<std::string, double> Message::decode(const unsigned char rawPayload[MAX_MSG_LEN],
+                                                        const unsigned int dlc) {
 	// Check input payload length
 	// If the length of the input payload is different than what is required by the DBC file,
 	// reject and fail the decode operation
@@ -107,21 +108,43 @@ std::unordered_map<std::string, double> Message::decode(unsigned char rawPayload
 	return sigValues;
 }
 
-unsigned int Message::encode(std::vector<std::pair<std::string, double> > signalsToEncode, unsigned char encodedPayload[]) {
+unsigned int Message::encode(const std::vector<std::pair<std::string, double> >& signalsToEncode,
+                             const double defaultGlobalInitialValue,
+                             unsigned char encodedPayload[]) {
+    // Check all signals are valid under the message
 	uint64_t encodedValue = 0;
 	for (unsigned short i = 0; i < signalsToEncode.size(); i++) {
-		// Find the signal to encode
 		signalsLibrary_iterator signals_itr = signalsLibrary.find(signalsToEncode[i].first);
-		if (signals_itr != signalsLibrary.end()) {
-			// Encode
-			uint64_t encodedValueOfSingleSignal = signals_itr->second.encodeSignal(signalsToEncode[i].second);
-			// Store encoded result with results from other signals
-			encodedValue |= encodedValueOfSingleSignal;
-		}
-		else {
-			throw std::invalid_argument("Encode failed. Cannot find signal: " + signalsToEncode[i].first + " in CAN database.");
+		if (signals_itr == signalsLibrary.end()) {
+            throw std::invalid_argument("Encode failed. Cannot find signal: "
+                                        + signalsToEncode[i].first + " in CAN database.");
 		}
 	}
+    // Find the signal, then encode
+    for (auto& sig : signalsLibrary) {
+        bool hasValuetoEncode = false;
+        uint64_t encodedValueOfSingleSignal = 0;
+        for (unsigned short i = 0; i < signalsToEncode.size(); i++) {
+            if (signalsToEncode[i].first == sig.first) {
+                hasValuetoEncode = true;
+                encodedValueOfSingleSignal = sig.second.encodeSignal(signalsToEncode[i].second);
+                break;
+            }
+        }
+        // If no value is provided, use default values
+        if (!hasValuetoEncode) {
+            if (sig.second.getInitialValue().has_value()) {
+                encodedValueOfSingleSignal = sig.second.encodeSignal(sig.second.getInitialValue().value());
+            }
+            // If the signal does not have a initial value, use the global initial value
+            else {
+                encodedValueOfSingleSignal = sig.second.encodeSignal(defaultGlobalInitialValue);
+            }
+        }
+        // Store encoded result with results from other signals
+        encodedValue |= encodedValueOfSingleSignal;
+    }
+    // Convert encodedValue into byte array
 	for (short i = MAX_MSG_LEN - 1; i >= 0; i--) {
 		encodedPayload[i] = encodedValue % 256; // get the last byte
 		encodedValue /= 256; // get the remainder

@@ -45,8 +45,10 @@ public:
 	std::istream& parseSignalValueDescription(std::istream& in);
     std::istream& parseSignalInitialValue(std::istream& in);
 	// Used to encode/decode messages
-	std::unordered_map<std::string, double> decode(unsigned char rawPayload[MAX_MSG_LEN], unsigned int dlc);
-	unsigned int encode(std::vector<std::pair<std::string, double> > signalsToEncode, unsigned char encodedPayload[]);
-
+    std::unordered_map<std::string, double> decode(const unsigned char rawPayload[MAX_MSG_LEN],
+                                                   const unsigned int dlc);
+	unsigned int encode(const std::vector<std::pair<std::string, double> >& signalsToEncode,
+                        const double defaultGlobalInitialValue,
+                        unsigned char encodedPayload[]);
 };
 #endif

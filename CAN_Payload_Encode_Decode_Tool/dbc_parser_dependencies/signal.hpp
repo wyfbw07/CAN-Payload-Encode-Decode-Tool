@@ -19,8 +19,8 @@ constexpr int MAX_BIT_INDEX_uint64_t = (sizeof(uint64_t) * CHAR_BIT) - 1;
 
 enum class ByteOrder {
 	NotSet,
-	Intel,
-	Motorola
+	Intel,  // little-endian
+	Motorola    // Big-endian
 };
 enum class ValueType {
 	NotSet,
@@ -33,10 +33,10 @@ enum class SignalType {
     Multiplexed
 };
 
-// Respresents a signal. Contains all signal info.
 class Signal {
 
 public:
+    
 	std::string getName() const { return name; }
 	std::string getUnit() const { return unit; }
 	double getFactor() const { return factor; }
@@ -46,15 +46,14 @@ public:
     unsigned int getStartBit() const { return startBit; }
 	unsigned int getSignalSize() const { return signalSize; }
     std::optional<double> getInitialValue() const { return initialValue; }
-	// Get byte order: Intel (little-endian) or Motorola (Big-endian)
 	ByteOrder getByteOrder() const { return sigByteOrder; }
 	ValueType getValueTypes() const { return sigValueType; }
 	// Get names of all the nodes that receives this signal
 	std::vector<std::string> getReceiversName() const { return receiversName; }
-    void setInitialValue(double& initialValue) { this->initialValue = initialValue; }
+    void setInitialValue(const double& initialValue) { this->initialValue = initialValue; }
     // Decode/Encode
-	double decodeSignal(unsigned char rawPayload[MAX_MSG_LEN], unsigned int messageSize);
-	uint64_t encodeSignal(double& physicalValue);
+	double decodeSignal(const unsigned char rawPayload[MAX_MSG_LEN], const unsigned int messageSize);
+	uint64_t encodeSignal(const double& physicalValue);
 	std::istream& parseSignalValueDescription(std::istream& in);
 	// Operator overload, allows parsing of signals info
 	friend std::istream& operator>>(std::istream& in, Signal& sig);

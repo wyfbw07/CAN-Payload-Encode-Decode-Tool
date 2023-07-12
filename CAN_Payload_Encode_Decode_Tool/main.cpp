@@ -11,7 +11,7 @@
 
 int main()
 {
-	int operationChoice = 1;
+	int operationChoice = 3;
 	// Create a class to store DBC info
 	DbcParser dbcFile;
 	try {
@@ -28,7 +28,6 @@ int main()
 			int dlc = 8;
 			int msgId = 258;
             unsigned char rawPayload[8] = { 0x2d, 0xff, 0xc8, 0x0f, 0x0, 0x0, 0x0, 0x0 };
-            // unsigned char rawPayload[8] = { 0x2d, 0xff, 0x78, 0x0a, 0x0, 0x0, 0x0, 0x0 };
 			std::unordered_map<std::string, double> result = dbcFile.decode(msgId, rawPayload, dlc);
 			// Print decoded message info
 			std::cout << "Decoded signal values: \n";

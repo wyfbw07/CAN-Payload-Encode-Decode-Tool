@@ -107,7 +107,7 @@ std::istream& Signal::parseSignalValueDescription(std::istream& in) {
     return in;
 }
 
-double Signal::decodeSignal(unsigned char rawPayload[MAX_MSG_LEN], unsigned int messageSize) {
+double Signal::decodeSignal(const unsigned char rawPayload[MAX_MSG_LEN], const unsigned int messageSize) {
     int64_t decodedValue = 0;
     unsigned int currentBit = 0;
     // Intel
@@ -152,7 +152,7 @@ double Signal::decodeSignal(unsigned char rawPayload[MAX_MSG_LEN], unsigned int 
     return (double)decodedValue * factor + offset;
 }
 
-uint64_t Signal::encodeSignal(double& physicalValue) {
+uint64_t Signal::encodeSignal(const double& physicalValue) {
     // Reverse linear conversion rule
     // to convert the signals physical value into the signal's raw value
     unsigned int currentBit = 0;

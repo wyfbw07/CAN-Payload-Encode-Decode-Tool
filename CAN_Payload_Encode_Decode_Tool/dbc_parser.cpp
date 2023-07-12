@@ -19,29 +19,29 @@ std::ostream& operator<<(std::ostream& os, const DbcParser& dbcFile){
     // Print details for each signal and message
     for (auto message : dbcFile.messagesInfo) {
         std::cout << "-------------------------------" << std::endl;
-        std::cout << message->getName() << " " << (*message).getId() << std::endl;
+        std::cout << "<Message> " << message->getName() << " " << (*message).getId() << std::endl;
         for (auto& sig : message->getSignalsInfo()) {
-            std::cout << "Signal: " << sig.second.getName() << "  ";
+            std::cout << "<Signal> " << sig.second.getName() << "  ";
             std::cout << sig.second.getStartBit() << "," << sig.second.getSignalSize() << std::endl;
-            std::cout << "(" << sig.second.getFactor() << ", " << sig.second.getOffset() << ")" << std::endl;
-            std::cout << "[" << sig.second.getMinValue() << "," << sig.second.getMaxValue() << "]" << std::endl;
+            std::cout << "\t\t(" << sig.second.getFactor() << ", " << sig.second.getOffset() << ")" << std::endl;
+            std::cout << "\t\t[" << sig.second.getMinValue() << "," << sig.second.getMaxValue() << "]" << std::endl;
             if (sig.second.getByteOrder() == ByteOrder::Intel) {
-                std::cout << "INTEL" << std::endl;
+                std::cout << "\t\tINTEL" << std::endl;
             }
             else {
-                std::cout << "MOTO" << std::endl;
+                std::cout << "\t\tMOTO" << std::endl;
             }
             if (sig.second.getValueTypes() == ValueType::Unsigned) {
-                std::cout << "UNSIGNED" << std::endl;
+                std::cout << "\t\tUNSIGNED" << std::endl;
             }
             else {
-                std::cout << "SIGNED" << std::endl;
+                std::cout << "\t\tSIGNED" << std::endl;
             }
             if (sig.second.getUnit() != "") {
-                std::cout << sig.second.getUnit() << std::endl;
+                std::cout << "\t\t" << sig.second.getUnit() << std::endl;
             }
             if (sig.second.getInitialValue().has_value()) {
-                std::cout << sig.second.getInitialValue().value() << std::endl;
+                std::cout << "\t\t" << sig.second.getInitialValue().value() << std::endl;
             }
             std::cout << std::endl;
         }
@@ -72,7 +72,7 @@ void DbcParser::loadAndParseFromFile(std::istream& in) {
 				messagesInfo.push_back(&(data_itr->second));
 			}
 			else {
-				throw std::invalid_argument("Message \"" + msg.getName() + "\" has a duplicate. Parse Failed.");
+				throw std::invalid_argument("Parse Failed. Message \"" + msg.getName() + "\" has a duplicate.");
 			}
 		}
 		// Value descriptions
@@ -91,9 +91,9 @@ void DbcParser::loadAndParseFromFile(std::istream& in) {
 					messages_itr->second.parseSignalValueDescription(in);
 				}
 				else {
-					throw std::invalid_argument("Cannot find message (ID: "
+					throw std::invalid_argument("Parse Failed. Cannot find message (ID: "
                                                 + std::to_string(messageId)
-                                                + ") for a given signal value description. Parse Failed.");
+                                                + ") for a given signal value description.");
 				}
 			}
 		}
@@ -107,8 +107,8 @@ void DbcParser::loadAndParseFromFile(std::istream& in) {
                 getline(in, attributeName, '\"');
                 if (attributeName == "GenSigStartValue") {
                     in >> attributeName;
-                    in >> sigInitialValueMin;
-                    in >> sigInitialValueMax;
+                    in >> sigGlobalInitialValueMin;
+                    in >> sigGlobalInitialValueMax;
                 }
             }
         }
@@ -118,7 +118,7 @@ void DbcParser::loadAndParseFromFile(std::istream& in) {
             getline(in, attributeName, '\"');
             getline(in, attributeName, '\"');
             if (attributeName == "GenSigStartValue") {
-                in >> sigInitialValueDefault;
+                in >> sigGlobalInitialValue;
             }
         }
         // Attribute values
@@ -137,9 +137,9 @@ void DbcParser::loadAndParseFromFile(std::istream& in) {
                         messages_itr->second.parseSignalInitialValue(in);
                     }
                     else {
-                        throw std::invalid_argument("Cannot find message (ID: "
+                        throw std::invalid_argument("Parse Failed. Cannot find message (ID: "
                                                     + std::to_string(messageId)
-                                                    + ") for a given signal value description. Parse Failed.");
+                                                    + ") for a given signal value description.");
                     }
                 }
             }
@@ -162,13 +162,43 @@ bool DbcParser::parse(const std::string& filePath) {
 		loadAndParseFromFile(dbcFile);
 	}
 	else {
-		throw std::invalid_argument("Could not open CAN database file.");
+		throw std::invalid_argument("Parse Failed. Could not open CAN database file.");
 		return false;
 	}
+    consistencyCheck();
 	// Parse complete, mark as successful
 	dbcFile.close();
 	isEmptyLibrary = false;
 	return true;
+}
+
+void DbcParser::consistencyCheck() {
+    if (!((sigGlobalInitialValue <= sigGlobalInitialValueMax) && (sigGlobalInitialValue >= sigGlobalInitialValueMin))
+        && !(sigGlobalInitialValueMax == 0 && sigGlobalInitialValueMin == 0)) {
+        std::cerr << "<Warning> Default signal initial value is not within its min and max range." << std::endl;
+    }
+    // Print details for each signal and message
+    for (auto message : messageLibrary) {
+        for (auto& sig : message.second.getSignalsInfo()) {
+            if (sig.second.getInitialValue().has_value()) {
+                if (!((sig.second.getInitialValue().value() <= sig.second.getMaxValue())
+                      && (sig.second.getInitialValue().value() >= sig.second.getMinValue()))) {
+                    // Refer to attribute BA_ "GenSigStartValue" SG_ in DBC file
+                    std::cerr << "<Warning> Signal initial value is not within min and max range of signal "
+                    << std::quoted(sig.second.getName()) << std::endl;
+                }
+            }
+            else {
+                if (!((sigGlobalInitialValue <= sig.second.getMaxValue())
+                      && (sigGlobalInitialValue >= sig.second.getMinValue()))) {
+                    // Refer to attribute BA_DEF_DEF_  "GenSigStartValue" in DBC file
+                    // This value should usually be 0 to avoid this warning
+                    std::cerr << "<Warning> Global signal initial value is not within min and max range of signal "
+                    << std::quoted(sig.second.getName()) << std::endl;
+                }
+            }
+        }
+    }
 }
 
 // If no specific signal name is requested, decode all signals by default
@@ -176,7 +206,7 @@ std::unordered_map<std::string, double> DbcParser::decode(unsigned long msgId, u
 	messageLibrary_iterator data_itr_msg = messageLibrary.find(msgId);
 	std::unordered_map<std::string, double> result;
 	if (data_itr_msg == messageLibrary.end()) {
-		std::cout << "No matching message found. Decode failed. An empty result is returned.\n" << std::endl;
+		std::cout << "Decode failed. No matching message found. An empty result is returned.\n" << std::endl;
 	}
 	else {
 		result = messageLibrary[msgId].decode(payLoad, dlc);
@@ -188,7 +218,7 @@ std::unordered_map<std::string, double> DbcParser::decode(unsigned long msgId, u
 double DbcParser::decodeSignalOnRequest(unsigned long msgId, unsigned char payLoad[], unsigned int dlc, std::string sigName) {
 	messageLibrary_iterator data_itr_msg = messageLibrary.find(msgId);
 	if (data_itr_msg == messageLibrary.end()) {
-		std::cout << "No matching message found. Decode failed. A NULL is returned.\n" << std::endl;
+		std::cout << "Decode failed. No matching message found. A NULL is returned.\n" << std::endl;
 		return NULL;
 	}
 	else {
@@ -196,7 +226,7 @@ double DbcParser::decodeSignalOnRequest(unsigned long msgId, unsigned char payLo
 		result = messageLibrary[msgId].decode(payLoad, dlc);
 		std::unordered_map<std::string, double>::iterator data_itr_sig = result.find(sigName);
 		if (data_itr_sig == result.end()) {
-			std::cout << "No matching signal found. Decode failed. A NULL is returned.\n" << std::endl;
+			std::cout << " Decode failed. No matching signal found. A NULL is returned.\n" << std::endl;
 			return NULL;
 		}
 		else {
@@ -208,15 +238,15 @@ double DbcParser::decodeSignalOnRequest(unsigned long msgId, unsigned char payLo
 }
 
 unsigned int DbcParser::encode(unsigned long msgId,
-							   std::vector<std::pair<std::string, double> > signalsToEncode,
+							   std::vector<std::pair<std::string, double> >& signalsToEncode,
 							   unsigned char encodedPayload[MAX_MSG_LEN]) {
 	unsigned int dlc = 0;
 	messageLibrary_iterator data_itr_msg = messageLibrary.find(msgId);
 	if (data_itr_msg == messageLibrary.end()) {
-		std::cout << "No matching message found. Encode failed. An empty result is returned.\n" << std::endl;
+		std::cout << "Encode failed. No matching message found. An empty result is returned.\n" << std::endl;
 	}
 	else {
-		dlc = messageLibrary[msgId].encode(signalsToEncode, encodedPayload);
+		dlc = messageLibrary[msgId].encode(signalsToEncode, sigGlobalInitialValue, encodedPayload);
 		// Print encoded message info
         // std::cout << "Encoded message[" << messageLibrary[msgId].getId() << "]: "
         //   << messageLibrary[msgId].getName() << std::endl;
