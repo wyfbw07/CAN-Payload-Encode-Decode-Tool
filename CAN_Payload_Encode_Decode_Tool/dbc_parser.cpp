@@ -11,79 +11,6 @@
 #include <stdexcept>
 #include "dbc_parser.hpp"
 
-void DbcParser::loadAndParseFromFile(std::istream& in) {
-	std::string line;
-	std::string lineInitial;
-	// Read the file line by line
-	while (in >> lineInitial) {
-		// Get the first word in the line
-		if (lineInitial == "NS_") {
-			while (in >> lineInitial && !(lineInitial == "BS_:" || lineInitial == "BS_"));
-		}
-		// Look for messages
-		if (lineInitial == "BO_") {
-			// Parse the message
-			Message msg;
-			in >> msg;
-			// Message name uniqueness check. Message names by definition need to be unqiue within the file
-			messageLibrary_iterator data_itr = messageLibrary.find(msg.getId());
-			if (data_itr == messageLibrary.end()) {
-				// Uniqueness check passed, store the message
-				messageLibrary.insert(std::make_pair(msg.getId(), msg));
-				data_itr = messageLibrary.find(msg.getId());
-				messagesInfo.push_back(&(data_itr->second));
-			}
-			else {
-				throw std::invalid_argument("Message \"" + msg.getName() + "\" has a duplicate. Parse Failed.");
-			}
-		}
-		// Look for value descriptions
-		else if (lineInitial == "VAL_") {
-			// There are two types of value descriptions: Environment variable value descriptions and Signal value descriptions
-			// Signal value descriptions define encodings for specific signal raw values.
-			// Environment variable value descriptions provide textual representations of specific values of the variable.
-            // Check "DBC File Format Documentation" if confused
-			unsigned int messageId;
-			in >> messageId;
-			if (messageId != 0) {
-				// If there exists a message ID, this is a signal value description
-				messageLibrary_iterator messages_itr = messageLibrary.find(messageId);
-				if (messages_itr != messageLibrary.end()) {
-					// Search for signals to store signal value description
-					messages_itr->second.parseSignalValueDescription(in);
-				}
-				else {
-					throw std::invalid_argument("Cannot find message (ID: " + std::to_string(messageId) + ") for a given signal value description. Parse Failed.");
-				}
-			}
-		}
-		else {
-			// Reserved cases for parsing other info in the DBC file
-		}
-		// Skip the rest of the line for uninterested data and make sure we can get a whole new line in the next iteration
-		in.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-	}
-}
-
-// Load file from path. Parse and store the content
-// A returned bool is used to indicate whether parsing succeeds or not
-bool DbcParser::parse(const std::string& filePath) {
-	// Get file path, open the file stream
-	std::ifstream dbcFile(filePath.c_str(), std::ios::binary);
-	if (dbcFile) {
-		// Parse file content
-		loadAndParseFromFile(dbcFile);
-	}
-	else {
-		throw std::invalid_argument("Could not open CAN database file.");
-		return false;
-	}
-	// Parse complete, mark as successful
-	dbcFile.close();
-	isEmptyLibrary = false;
-	return true;
-}
-
 std::ostream& operator<<(std::ostream& os, const DbcParser& dbcFile){
     if (dbcFile.isEmptyLibrary) {
         std::cout << "Empty Library. Load and parse DBC file first." << std::endl;
@@ -113,11 +40,135 @@ std::ostream& operator<<(std::ostream& os, const DbcParser& dbcFile){
             if (sig.second.getUnit() != "") {
                 std::cout << sig.second.getUnit() << std::endl;
             }
+            if (sig.second.getInitialValue().has_value()) {
+                std::cout << sig.second.getInitialValue().value() << std::endl;
+            }
             std::cout << std::endl;
         }
     }
     std::cout << "-------------------------------" << std::endl;
     return os;
+}
+
+void DbcParser::loadAndParseFromFile(std::istream& in) {
+	std::string lineInitial;
+	// Read the file line by line
+	while (in >> lineInitial) {
+		// Get the first word in the line
+		if (lineInitial == "NS_") {
+			while (in >> lineInitial && !(lineInitial == "BS_:" || lineInitial == "BS_"));
+		}
+		// Messages
+		if (lineInitial == "BO_") {
+			// Parse the message
+			Message msg;
+			in >> msg;
+			// Message name uniqueness check. Message names by definition need to be unqiue within the file
+			messageLibrary_iterator data_itr = messageLibrary.find(msg.getId());
+			if (data_itr == messageLibrary.end()) {
+				// Uniqueness check passed, store the message
+				messageLibrary.insert(std::make_pair(msg.getId(), msg));
+				data_itr = messageLibrary.find(msg.getId());
+				messagesInfo.push_back(&(data_itr->second));
+			}
+			else {
+				throw std::invalid_argument("Message \"" + msg.getName() + "\" has a duplicate. Parse Failed.");
+			}
+		}
+		// Value descriptions
+		else if (lineInitial == "VAL_") {
+			// There are two types of value descriptions: Environment variable value descriptions and Signal value descriptions
+			// Signal value descriptions define encodings for specific signal raw values.
+			// Environment variable value descriptions provide textual representations of specific values of the variable.
+            // Check "DBC File Format Documentation" if confused
+			unsigned int messageId;
+			in >> messageId;
+			if (messageId != 0) {
+				// If there exists a message ID, this is a signal value description
+				messageLibrary_iterator messages_itr = messageLibrary.find(messageId);
+				if (messages_itr != messageLibrary.end()) {
+					// Search for signals to store signal value description
+					messages_itr->second.parseSignalValueDescription(in);
+				}
+				else {
+					throw std::invalid_argument("Cannot find message (ID: "
+                                                + std::to_string(messageId)
+                                                + ") for a given signal value description. Parse Failed.");
+				}
+			}
+		}
+        // Attribute definitions
+        else if (lineInitial == "BA_DEF_") {
+            std::string objectType;
+            in >> objectType;
+            if (objectType == "SG_") {
+                std::string attributeName;
+                getline(in, attributeName, '\"');
+                getline(in, attributeName, '\"');
+                if (attributeName == "GenSigStartValue") {
+                    in >> attributeName;
+                    in >> sigInitialValueMin;
+                    in >> sigInitialValueMax;
+                }
+            }
+        }
+        // Attribute defaults
+        else if (lineInitial == "BA_DEF_DEF_") {
+            std::string attributeName;
+            getline(in, attributeName, '\"');
+            getline(in, attributeName, '\"');
+            if (attributeName == "GenSigStartValue") {
+                in >> sigInitialValueDefault;
+            }
+        }
+        // Attribute values
+        else if (lineInitial == "BA_") {
+            std::string attributeName;
+            getline(in, attributeName, '\"');
+            getline(in, attributeName, '\"');
+            if (attributeName == "GenSigStartValue") {
+                std::string objectType;
+                in >> objectType;
+                if (objectType == "SG_") {
+                    unsigned int messageId;
+                    in >> messageId;
+                    messageLibrary_iterator messages_itr = messageLibrary.find(messageId);
+                    if (messages_itr != messageLibrary.end()) {
+                        messages_itr->second.parseSignalInitialValue(in);
+                    }
+                    else {
+                        throw std::invalid_argument("Cannot find message (ID: "
+                                                    + std::to_string(messageId)
+                                                    + ") for a given signal value description. Parse Failed.");
+                    }
+                }
+            }
+        }
+		else {
+			// Reserved cases for parsing other info in the DBC file
+		}
+		// Skip the rest of the line for uninterested data and make sure we can get a whole new line in the next iteration
+		in.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+	}
+}
+
+// Load file from path. Parse and store the content
+// A returned bool is used to indicate whether parsing succeeds or not
+bool DbcParser::parse(const std::string& filePath) {
+	// Get file path, open the file stream
+	std::ifstream dbcFile(filePath.c_str(), std::ios::binary);
+	if (dbcFile) {
+		// Parse file content
+		loadAndParseFromFile(dbcFile);
+	}
+	else {
+		throw std::invalid_argument("Could not open CAN database file.");
+		return false;
+	}
+	// Parse complete, mark as successful
+	dbcFile.close();
+	isEmptyLibrary = false;
+	return true;
 }
 
 // If no specific signal name is requested, decode all signals by default
@@ -167,10 +218,11 @@ unsigned int DbcParser::encode(unsigned long msgId,
 	else {
 		dlc = messageLibrary[msgId].encode(signalsToEncode, encodedPayload);
 		// Print encoded message info
-//         std::cout << "Encoded message[" << messageLibrary[msgId].getId() << "]: " << messageLibrary[msgId].getName() << std::endl;
-//        for (short int i = 0; i < 8; i++) {
-//               std::cout << std::bitset<sizeof(encodedPayload[i])*8>(encodedPayload[i]) << std::endl;
-//         }
+        // std::cout << "Encoded message[" << messageLibrary[msgId].getId() << "]: "
+        //   << messageLibrary[msgId].getName() << std::endl;
+        // for (short int i = 0; i < 8; i++) {
+        //     std::cout << std::bitset<sizeof(encodedPayload[i])*8>(encodedPayload[i]) << std::endl;
+        // }
 	}
 	return dlc;
 }

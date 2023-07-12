@@ -11,7 +11,7 @@
 
 int main()
 {
-	int operationChoice = 3;
+	int operationChoice = 1;
 	// Create a class to store DBC info
 	DbcParser dbcFile;
 	try {

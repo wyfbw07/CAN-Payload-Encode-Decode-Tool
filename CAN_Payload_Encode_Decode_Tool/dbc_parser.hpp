@@ -35,6 +35,10 @@ public:
 private:
 
 	typedef std::unordered_map<unsigned long, Message>::iterator messageLibrary_iterator;
+    // Default value Belongs to attribute name "GenSigStartValue"
+    double sigInitialValueMin; // BA_DEF_ SG_  "GenSigStartValue"
+    double sigInitialValueMax; // BA_DEF_ SG_  "GenSigStartValue"
+    double sigInitialValueDefault; // BA_DEF_DEF_  "GenSigStartValue"
 	// This list contains all the messages which got parsed from the DBC-File
     std::vector<Message*> messagesInfo;
     // A bool to indicate whether DBC file has been loaded or not

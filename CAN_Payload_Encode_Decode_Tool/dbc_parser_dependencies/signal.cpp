@@ -75,7 +75,11 @@ std::istream& operator>>(std::istream& in, Signal& sig) {
     // Read destination nodes
     in >> rawString;
     if (rawString != "Vector__XXX") {
-        sig.splitWithDeliminators(rawString, ',', sig.receiversName);
+        std::stringstream tempStream(rawString);
+        std::string item;
+        while (std::getline(tempStream, item, ',')) {
+            sig.receiversName.push_back(item);
+        }
     }
     in.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     return in;

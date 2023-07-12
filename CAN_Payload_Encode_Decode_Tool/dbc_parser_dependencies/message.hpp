@@ -16,7 +16,7 @@
 #include <unordered_map>
 #include "signal.hpp"
 
-class Message : DbcParserHelper {
+class Message {
 
 	typedef std::vector<Signal*> signals_t;
 	typedef std::unordered_map<std::string, Signal>::iterator signalsLibrary_iterator;
@@ -43,6 +43,7 @@ public:
 	std::unordered_map<std::string, Signal> getSignalsInfo() const { return signalsLibrary; }
 	// Parse signal value descrption
 	std::istream& parseSignalValueDescription(std::istream& in);
+    std::istream& parseSignalInitialValue(std::istream& in);
 	// Used to encode/decode messages
 	std::unordered_map<std::string, double> decode(unsigned char rawPayload[MAX_MSG_LEN], unsigned int dlc);
 	unsigned int encode(std::vector<std::pair<std::string, double> > signalsToEncode, unsigned char encodedPayload[]);

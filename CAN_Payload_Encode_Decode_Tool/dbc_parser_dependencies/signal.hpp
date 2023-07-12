@@ -13,7 +13,6 @@
 #include <limits>
 #include <iosfwd>
 #include <unordered_map>
-#include "dbc_parser_helper.hpp"
 
 constexpr int MAX_MSG_LEN = 8;
 constexpr int MAX_BIT_INDEX_uint64_t = (sizeof(uint64_t) * CHAR_BIT) - 1;
@@ -35,31 +34,27 @@ enum class SignalType {
 };
 
 // Respresents a signal. Contains all signal info.
-class Signal : DbcParserHelper {
+class Signal {
 
 public:
-
-	// Get signal name and unit of the signal payload in string
 	std::string getName() const { return name; }
 	std::string getUnit() const { return unit; }
-	// Get factor and offset
 	double getFactor() const { return factor; }
 	double getOffset() const { return offset; }
-	// Get max and min possible value of the signal payload
 	double getMinValue() const { return minValue; }
 	double getMaxValue() const { return maxValue; }
-	// Get start bit and data length
-	unsigned int getStartBit() const { return startBit; }
+    unsigned int getStartBit() const { return startBit; }
 	unsigned int getSignalSize() const { return signalSize; }
+    std::optional<double> getInitialValue() const { return initialValue; }
 	// Get byte order: Intel (little-endian) or Motorola (Big-endian)
 	ByteOrder getByteOrder() const { return sigByteOrder; }
 	ValueType getValueTypes() const { return sigValueType; }
 	// Get names of all the nodes that receives this signal
 	std::vector<std::string> getReceiversName() const { return receiversName; }
-	// Convert the signals raw value into the signal's physical value and vice versa
+    void setInitialValue(double& initialValue) { this->initialValue = initialValue; }
+    // Decode/Encode
 	double decodeSignal(unsigned char rawPayload[MAX_MSG_LEN], unsigned int messageSize);
 	uint64_t encodeSignal(double& physicalValue);
-	// Parse signal value descrption
 	std::istream& parseSignalValueDescription(std::istream& in);
 	// Operator overload, allows parsing of signals info
 	friend std::istream& operator>>(std::istream& in, Signal& sig);
@@ -76,13 +71,15 @@ private:
 	// Conversion formula: physical value = original value * factor + offset
 	double factor{};
 	double offset{};
-	// Specifies the range of the signal value; these two values are of type double
+	// Specifies the range of the signal value
 	double maxValue{};
 	double minValue{};
 	// Signal start bit
 	unsigned int startBit{};
 	// The signal_size specifies the size of the signal in bits
 	unsigned int signalSize{};
+    // The default RAW value for the signal if no value is provided upon encoding
+    std::optional<double> initialValue{};
 	// Byte order can be either Intel (little-endian) or Motorola (Big-endian)
 	ByteOrder sigByteOrder = ByteOrder::NotSet;
 	// Value order can be either unsigned or signed
@@ -93,16 +90,6 @@ private:
 	// Signal value descriptions: define encodings for specific signal raw values
 	// <physical value, label of the value>
 	std::unordered_map<double, std::string> valueDescriptions;
-	// Helper functions that are essential to parsing
-	std::vector<std::string>& splitWithDeliminators(const std::string& str,
-		char delimiter,
-		std::vector<std::string>& elems) {
-		DbcParserHelper::splitWithDeliminators(str, delimiter, elems);
-		return elems;
-	}
-	std::string& trimLeadingAndTrailingChar(std::string& str, const char& toTrim) {
-		return DbcParserHelper::trimLeadingAndTrailingChar(str, toTrim);
-	}
 };
 
 #endif /* SIGNAL_H */

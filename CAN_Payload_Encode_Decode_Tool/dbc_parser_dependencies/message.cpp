@@ -49,7 +49,8 @@ std::istream& operator>>(std::istream& in, Message& msg) {
 		}
 		else {
 			// Uniqueness check failed, then something must be wrong with the DBC file, parse failed
-			throw std::invalid_argument("Parse Failed. Signal \"" + sig.getName() + "\" has duplicates in the same message.");
+			throw std::invalid_argument("Parse Failed. Signal \"" + sig.getName()
+                                        + "\" has duplicates in the same message.");
 		}
 		// Update stream position after each signal read
 		posBeforePeek = in.tellg();
@@ -68,7 +69,24 @@ std::istream& Message::parseSignalValueDescription(std::istream& in) {
         signals_itr->second.parseSignalValueDescription(in);
     }
     else {
-        throw std::invalid_argument("Parse failed. Cannot find signal: " + sigName + " in CAN database.");
+        throw std::invalid_argument("Parse failed during parsing signal value description. Cannot find signal: "
+                                    + sigName + " in CAN database.");
+    }
+    return in;
+}
+
+std::istream& Message::parseSignalInitialValue(std::istream& in) {
+    std::string sigName;
+    in >> sigName;
+    signalsLibrary_iterator signals_itr = signalsLibrary.find(sigName);
+    if (signals_itr != signalsLibrary.end()) {
+        double initialValue;
+        in >> initialValue;
+        signals_itr->second.setInitialValue(initialValue);
+    }
+    else {
+        throw std::invalid_argument("Parse failed during parsing signal's initial value. Cannot find signal: "
+                                    + sigName + " in CAN database.");
     }
     return in;
 }
@@ -110,4 +128,3 @@ unsigned int Message::encode(std::vector<std::pair<std::string, double> > signal
 	}
 	return messageSize;
 }
-
