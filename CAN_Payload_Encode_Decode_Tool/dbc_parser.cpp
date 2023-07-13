@@ -175,17 +175,16 @@ bool DbcParser::parse(const std::string& filePath) {
 void DbcParser::consistencyCheck() {
     if (!((sigGlobalInitialValue <= sigGlobalInitialValueMax) && (sigGlobalInitialValue >= sigGlobalInitialValueMin))
         && !(sigGlobalInitialValueMax == 0 && sigGlobalInitialValueMin == 0)) {
-        std::cerr << "<Warning> Default signal initial value is not within its min and max range." << std::endl;
+        throw std::invalid_argument("<Consistency check> Default signal initial value is not within its min and max range.");
     }
-    // Print details for each signal and message
     for (auto message : messageLibrary) {
         for (auto& sig : message.second.getSignalsInfo()) {
             if (sig.second.getInitialValue().has_value()) {
                 if (!((sig.second.getInitialValue().value() <= sig.second.getMaxValue())
                       && (sig.second.getInitialValue().value() >= sig.second.getMinValue()))) {
                     // Refer to attribute BA_ "GenSigStartValue" SG_ in DBC file
-                    std::cerr << "<Warning> Signal initial value is not within min and max range of signal "
-                    << std::quoted(sig.second.getName()) << std::endl;
+                    throw std::invalid_argument("<Consistency check> Signal initial value is not within min and max range of signal \""
+                    + sig.second.getName() + "\".");
                 }
             }
             else {
@@ -193,8 +192,8 @@ void DbcParser::consistencyCheck() {
                       && (sigGlobalInitialValue >= sig.second.getMinValue()))) {
                     // Refer to attribute BA_DEF_DEF_  "GenSigStartValue" in DBC file
                     // This value should usually be 0 to avoid this warning
-                    std::cerr << "<Warning> Global signal initial value is not within min and max range of signal "
-                    << std::quoted(sig.second.getName()) << std::endl;
+                    throw std::invalid_argument("<Consistency check> Global signal initial value is not within min and max range of signal \""
+                    + sig.second.getName() + "\".");
                 }
             }
         }

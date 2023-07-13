@@ -47,7 +47,7 @@ public:
 	// Used to encode/decode messages
     std::unordered_map<std::string, double> decode(const unsigned char rawPayload[MAX_MSG_LEN],
                                                    const unsigned int dlc);
-	unsigned int encode(const std::vector<std::pair<std::string, double> >& signalsToEncode,
+	unsigned int encode(std::vector<std::pair<std::string, double> >& signalsToEncode,
                         const double defaultGlobalInitialValue,
                         unsigned char encodedPayload[]);
 };

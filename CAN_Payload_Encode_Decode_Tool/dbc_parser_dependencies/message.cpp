@@ -5,7 +5,7 @@
  *      Author: Yifan Wang
  */
 
-#include <bitset>
+#include <iomanip>
 #include <iostream>
 #include <sstream>
 #include "message.hpp"
@@ -108,18 +108,26 @@ std::unordered_map<std::string, double> Message::decode(const unsigned char rawP
 	return sigValues;
 }
 
-unsigned int Message::encode(const std::vector<std::pair<std::string, double> >& signalsToEncode,
+unsigned int Message::encode(std::vector<std::pair<std::string, double> >& signalsToEncode,
                              const double defaultGlobalInitialValue,
                              unsigned char encodedPayload[]) {
     // Check all signals are valid under the message
 	uint64_t encodedValue = 0;
 	for (unsigned short i = 0; i < signalsToEncode.size(); i++) {
-		signalsLibrary_iterator signals_itr = signalsLibrary.find(signalsToEncode[i].first);
-		if (signals_itr == signalsLibrary.end()) {
+        signalsLibrary_iterator signals_itr = signalsLibrary.find(signalsToEncode[i].first);
+        if (signals_itr == signalsLibrary.end()) {
             throw std::invalid_argument("Encode failed. Cannot find signal: "
                                         + signalsToEncode[i].first + " in CAN database.");
-		}
-	}
+        }
+        unsigned int rawValue = (signalsToEncode[i].second - signals_itr->second.getOffset()) / signals_itr->second.getFactor();
+        if (!(rawValue <= signals_itr->second.getMaxValue()
+              && rawValue >= signals_itr->second.getMinValue())) {
+            std::cerr << "<Warning> Trying to encode a value that is out of the min and max range of signal "
+            << std::quoted(name) << " is not allowed. This signal will encode with its initial value: "
+            << signals_itr->second.getInitialValue().value_or(defaultGlobalInitialValue) << '.' << std::endl;
+            signalsToEncode[i].second = signals_itr->second.getInitialValue().value_or(defaultGlobalInitialValue);
+        }
+    }
     // Find the signal, then encode
     for (auto& sig : signalsLibrary) {
         bool hasValuetoEncode = false;
@@ -131,15 +139,10 @@ unsigned int Message::encode(const std::vector<std::pair<std::string, double> >&
                 break;
             }
         }
-        // If no value is provided, use default values
+        // If no value is provided, use initial (default) values
+        // If the signal does not have a initial value, use the global initial value
         if (!hasValuetoEncode) {
-            if (sig.second.getInitialValue().has_value()) {
-                encodedValueOfSingleSignal = sig.second.encodeSignal(sig.second.getInitialValue().value());
-            }
-            // If the signal does not have a initial value, use the global initial value
-            else {
-                encodedValueOfSingleSignal = sig.second.encodeSignal(defaultGlobalInitialValue);
-            }
+            encodedValueOfSingleSignal = sig.second.encodeSignal(sig.second.getInitialValue().value_or(defaultGlobalInitialValue));
         }
         // Store encoded result with results from other signals
         encodedValue |= encodedValueOfSingleSignal;
