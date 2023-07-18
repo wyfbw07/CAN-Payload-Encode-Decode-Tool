@@ -21,10 +21,10 @@ std::ostream& operator<<(std::ostream& os, const DbcParser& dbcFile){
         std::cout << "-------------------------------" << std::endl;
         std::cout << "<Message> " << message->getName() << " " << (*message).getId() << std::endl;
         for (auto& sig : message->getSignalsInfo()) {
-            std::cout << "<Signal> " << sig.second.getName() << "  ";
-            std::cout << sig.second.getStartBit() << "," << sig.second.getSignalSize() << std::endl;
-            std::cout << "\t\t(" << sig.second.getFactor() << ", " << sig.second.getOffset() << ")" << std::endl;
-            std::cout << "\t\t[" << sig.second.getMinValue() << "," << sig.second.getMaxValue() << "]" << std::endl;
+            std::cout << "<Signal> " << sig.second.getName() << "  " << std::endl;
+            std::cout << "\t\tstart bit/sig size: " << sig.second.getStartBit() << "," << sig.second.getSignalSize() << std::endl;
+            std::cout << "\t\tfactor/offset: (" << sig.second.getFactor() << ", " << sig.second.getOffset() << ")" << std::endl;
+            std::cout << "\t\tmin/max: [" << sig.second.getMinValue() << "," << sig.second.getMaxValue() << "]" << std::endl;
             if (sig.second.getByteOrder() == ByteOrder::Intel) {
                 std::cout << "\t\tINTEL" << std::endl;
             }
@@ -41,7 +41,7 @@ std::ostream& operator<<(std::ostream& os, const DbcParser& dbcFile){
                 std::cout << "\t\t" << sig.second.getUnit() << std::endl;
             }
             if (sig.second.getInitialValue().has_value()) {
-                std::cout << "\t\t" << sig.second.getInitialValue().value() << std::endl;
+                std::cout << "\t\tinitial value: " << sig.second.getInitialValue().value() << std::endl;
             }
             std::cout << std::endl;
         }

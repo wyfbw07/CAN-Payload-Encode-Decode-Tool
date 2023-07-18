@@ -12,6 +12,7 @@
 #include <vector>
 #include <limits>
 #include <iosfwd>
+#include <optional>
 #include <unordered_map>
 
 constexpr int MAX_MSG_LEN = 8;
