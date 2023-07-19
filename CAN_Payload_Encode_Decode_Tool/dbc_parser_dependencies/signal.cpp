@@ -109,7 +109,7 @@ std::istream& Signal::parseSignalValueDescription(std::istream& in) {
 
 double Signal::decodeSignal(const unsigned char rawPayload[MAX_MSG_LEN], const unsigned int messageSize) {
     int64_t decodedValue = 0;
-    unsigned int currentBit = 0;
+    uint16_t currentBit = 0;
     // Intel
     if (sigByteOrder == ByteOrder::Intel) {
         // Change endianness
@@ -149,15 +149,19 @@ double Signal::decodeSignal(const unsigned char rawPayload[MAX_MSG_LEN], const u
             currentBit++;
         }
     }
+    // Sign extend based on signal value type
+    if ((sigValueType == ValueType::Signed) && (decodedValue & (1ULL << (signalSize - 1)))) {
+        decodedValue |= ~((1ULL << signalSize) - 1);
+    }
     return (double)decodedValue * factor + offset;
 }
 
 uint64_t Signal::encodeSignal(const double& physicalValue) {
     // Reverse linear conversion rule
     // to convert the signals physical value into the signal's raw value
-    unsigned int currentBit = 0;
+    uint16_t currentBit = 0;
     uint64_t encodedValue = 0;
-    unsigned int rawValue = (physicalValue - offset) / factor;
+    int64_t rawValue = (physicalValue - offset) / factor;
     uint8_t* rawPayload = (uint8_t*)&rawValue;
     if (sigByteOrder == ByteOrder::Intel) { // Intel
         // Encode
