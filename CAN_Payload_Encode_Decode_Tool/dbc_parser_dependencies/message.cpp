@@ -9,6 +9,7 @@
 #include <iostream>
 #include <sstream>
 #include "message.hpp"
+#include "dbc_parser_helper.hpp"
 
 std::istream& operator>>(std::istream& in, Message& msg) {
 	// Read message ID
@@ -42,7 +43,7 @@ std::istream& operator>>(std::istream& in, Message& msg) {
 		Signal sig;
 		in >> sig;
 		// Signal name uniqueness check. Signal names by definition need to be unqiue within each message
-		std::unordered_map<std::string, Signal>::iterator data_itr = msg.signalsLibrary.find(sig.getName());
+        Message::signalsLibrary_iterator data_itr = msg.signalsLibrary.find(sig.getName());
 		if (data_itr == msg.signalsLibrary.end()) {
 			// Uniqueness check passed, store the signal
 			msg.signalsLibrary.insert(std::make_pair(sig.getName(), sig));
@@ -60,22 +61,7 @@ std::istream& operator>>(std::istream& in, Message& msg) {
 	return in;
 }
 
-std::istream& Message::parseSignalValueDescription(std::istream& in) {
-    // Search for corresponding signal to parse the value descriptions
-    std::string sigName;
-    in >> sigName;
-    signalsLibrary_iterator signals_itr = signalsLibrary.find(sigName);
-    if (signals_itr != signalsLibrary.end()) {
-        signals_itr->second.parseSignalValueDescription(in);
-    }
-    else {
-        throw std::invalid_argument("Parse failed during parsing signal value description. Cannot find signal: "
-                                    + sigName + " in CAN database.");
-    }
-    return in;
-}
-
-std::istream& Message::parseSignalInitialValue(std::istream& in) {
+std::istream& Message::parseSigInitialValue(std::istream& in) {
     std::string sigName;
     in >> sigName;
     signalsLibrary_iterator signals_itr = signalsLibrary.find(sigName);
@@ -91,12 +77,39 @@ std::istream& Message::parseSignalInitialValue(std::istream& in) {
     return in;
 }
 
-// Create a hash table for all decoded signals
+std::istream& Message::parseSigValueDescription(std::istream& in) {
+    // Search for corresponding signal to parse the value descriptions
+    std::string sigName;
+    in >> sigName;
+    signalsLibrary_iterator signals_itr = signalsLibrary.find(sigName);
+    if (signals_itr != signalsLibrary.end()) {
+        signals_itr->second.parseSignalValueDescription(in);
+    }
+    else {
+        throw std::invalid_argument("Parse failed during parsing signal value description. Cannot find signal: "
+                                    + sigName + " in CAN database.");
+    }
+    return in;
+}
+
+std::istream& Message::parseAdditionalSigValueType(std::istream& in) {
+    std::string sigName = utils::getline(in, ':');
+    int sigValueTypeIdentifier;
+    in >> sigValueTypeIdentifier;
+    signalsLibrary_iterator signals_itr = signalsLibrary.find(sigName);
+    if (signals_itr != signalsLibrary.end()) {
+        signals_itr->second.setSigValueType(sigValueTypeIdentifier);
+    }
+    else {
+        throw std::invalid_argument("Parse failed during parsing signal's value type. Cannot find signal: "
+                                    + sigName + " in CAN database.");
+    }
+    return in;
+}
+
 std::unordered_map<std::string, double> Message::decode(const unsigned char rawPayload[MAX_MSG_LEN],
                                                         const unsigned int dlc) {
 	// Check input payload length
-	// If the length of the input payload is different than what is required by the DBC file,
-	// reject and fail the decode operation
 	if (dlc != messageSize) {
 		throw std::invalid_argument("Decode failed. The data length of the input payload does not match with DBC info.");
 	}
@@ -111,7 +124,7 @@ std::unordered_map<std::string, double> Message::decode(const unsigned char rawP
 unsigned int Message::encode(std::vector<std::pair<std::string, double> >& signalsToEncode,
                              const double defaultGlobalInitialValue,
                              unsigned char encodedPayload[]) {
-    // Check all signals are valid under the message
+    // Check if all signals are valid under the message
 	uint64_t encodedValue = 0;
 	for (unsigned short i = 0; i < signalsToEncode.size(); i++) {
         signalsLibrary_iterator signals_itr = signalsLibrary.find(signalsToEncode[i].first);

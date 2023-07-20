@@ -18,8 +18,30 @@
 
 class Message {
 
-	typedef std::vector<Signal*> signals_t;
-	typedef std::unordered_map<std::string, Signal>::iterator signalsLibrary_iterator;
+public:
+    
+    // Getter functions for all the possible data one can request from a Message
+    unsigned long getId() const { return id; }
+    unsigned int getDlc() const { return messageSize; }
+    std::string getName() const { return name; }
+    std::string getSenderNames() const { return senderName; }
+    std::unordered_map<std::string, Signal> getSignalsInfo() const { return signalsLibrary; }
+    // Parse signal value descrption
+    std::istream& parseSigInitialValue(std::istream& in);
+    std::istream& parseSigValueDescription(std::istream& in);
+    std::istream& parseAdditionalSigValueType(std::istream& in);
+    // Used to encode/decode messages
+    std::unordered_map<std::string, double> decode(const unsigned char rawPayload[MAX_MSG_LEN],
+                                                   const unsigned int dlc);
+    unsigned int encode(std::vector<std::pair<std::string, double> >& signalsToEncode,
+                        const double defaultGlobalInitialValue,
+                        unsigned char encodedPayload[]);
+    // Overload of operator>> to enable parsing of Messages from streams of DBC-Files
+    friend std::istream& operator>>(std::istream& in, Message& msg);
+    
+private:
+    
+    typedef std::unordered_map<std::string, Signal>::iterator signalsLibrary_iterator;
 	// Name of the Message
 	std::string name{};
 	// The CAN-ID assigned to this specific Message
@@ -31,24 +53,5 @@ class Message {
 	// A hash table containing all Signals that are present in this Message <Signal name, Signal object>
 	std::unordered_map<std::string, Signal> signalsLibrary{};
 
-public:
-
-	// Overload of operator>> to enable parsing of Messages from streams of DBC-Files
-	friend std::istream& operator>>(std::istream& in, Message& msg);
-	// Getter functions for all the possible data one can request from a Message
-	unsigned long getId() const { return id; }
-	unsigned int getDlc() const { return messageSize; }
-	std::string getName() const { return name; }
-	std::string getSenderNames() const { return senderName; }
-	std::unordered_map<std::string, Signal> getSignalsInfo() const { return signalsLibrary; }
-	// Parse signal value descrption
-	std::istream& parseSignalValueDescription(std::istream& in);
-    std::istream& parseSignalInitialValue(std::istream& in);
-	// Used to encode/decode messages
-    std::unordered_map<std::string, double> decode(const unsigned char rawPayload[MAX_MSG_LEN],
-                                                   const unsigned int dlc);
-	unsigned int encode(std::vector<std::pair<std::string, double> >& signalsToEncode,
-                        const double defaultGlobalInitialValue,
-                        unsigned char encodedPayload[]);
 };
 #endif

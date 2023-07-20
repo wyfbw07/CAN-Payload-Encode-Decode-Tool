@@ -10,7 +10,6 @@
 
 #include <string>
 #include <vector>
-#include <limits>
 #include <iosfwd>
 #include <optional>
 #include <unordered_map>
@@ -26,7 +25,9 @@ enum class ByteOrder {
 enum class ValueType {
 	NotSet,
 	Signed,
-	Unsigned
+	Unsigned,
+    IeeeFloat,
+    IeeeDouble
 };
 enum class SignalType {
     NotSet,
@@ -45,13 +46,14 @@ public:
 	double getMinValue() const { return minValue; }
 	double getMaxValue() const { return maxValue; }
     unsigned int getStartBit() const { return startBit; }
-	unsigned int getSignalSize() const { return signalSize; }
+    unsigned int getSignalSize() const { return signalSize; }
+    ByteOrder getByteOrder() const { return sigByteOrder; }
+    ValueType getValueTypes() const { return sigValueType; }
     std::optional<double> getInitialValue() const { return initialValue; }
-	ByteOrder getByteOrder() const { return sigByteOrder; }
-	ValueType getValueTypes() const { return sigValueType; }
 	// Get names of all the nodes that receives this signal
 	std::vector<std::string> getReceiversName() const { return receiversName; }
     void setInitialValue(const double& initialValue) { this->initialValue = initialValue; }
+    void setSigValueType(const int sigValueTypeIdentifier);
     // Decode/Encode
 	double decodeSignal(const unsigned char rawPayload[MAX_MSG_LEN], const unsigned int messageSize);
 	uint64_t encodeSignal(const double& physicalValue);

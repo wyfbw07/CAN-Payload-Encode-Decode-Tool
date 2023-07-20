@@ -11,6 +11,7 @@
 		D339197A2A0A342E002DD719 /* dbc_parser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D33919722A0A342E002DD719 /* dbc_parser.cpp */; };
 		D339197B2A0A342E002DD719 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D33919742A0A342E002DD719 /* main.cpp */; };
 		D339197C2A0A342E002DD719 /* signal.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D33919752A0A342E002DD719 /* signal.cpp */; };
+		D3BFA4262A68CEC0001CA9EF /* pack754.c in Sources */ = {isa = PBXBuildFile; fileRef = D3BFA4252A68CEC0001CA9EF /* pack754.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -34,6 +35,9 @@
 		D33919752A0A342E002DD719 /* signal.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = signal.cpp; sourceTree = "<group>"; };
 		D33919762A0A342E002DD719 /* dbc_parser.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = dbc_parser.hpp; sourceTree = "<group>"; };
 		D33919772A0A342E002DD719 /* signal.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = signal.hpp; sourceTree = "<group>"; };
+		D3BFA4202A678F94001CA9EF /* dbc_parser_helper.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = dbc_parser_helper.hpp; sourceTree = "<group>"; };
+		D3BFA4242A68CEC0001CA9EF /* pack754.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = pack754.h; sourceTree = "<group>"; };
+		D3BFA4252A68CEC0001CA9EF /* pack754.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = pack754.c; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -77,10 +81,13 @@
 		D383DE862A5BF59C00553712 /* dbc_parser_dependencies */ = {
 			isa = PBXGroup;
 			children = (
+				D3BFA4202A678F94001CA9EF /* dbc_parser_helper.hpp */,
 				D33919712A0A342E002DD719 /* message.hpp */,
 				D33919702A0A342E002DD719 /* message.cpp */,
 				D33919772A0A342E002DD719 /* signal.hpp */,
 				D33919752A0A342E002DD719 /* signal.cpp */,
+				D3BFA4242A68CEC0001CA9EF /* pack754.h */,
+				D3BFA4252A68CEC0001CA9EF /* pack754.c */,
 			);
 			path = dbc_parser_dependencies;
 			sourceTree = "<group>";
@@ -143,6 +150,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D339197A2A0A342E002DD719 /* dbc_parser.cpp in Sources */,
+				D3BFA4262A68CEC0001CA9EF /* pack754.c in Sources */,
 				D339197B2A0A342E002DD719 /* main.cpp in Sources */,
 				D33919792A0A342E002DD719 /* message.cpp in Sources */,
 				D339197C2A0A342E002DD719 /* signal.cpp in Sources */,

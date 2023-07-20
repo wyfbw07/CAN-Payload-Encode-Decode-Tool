@@ -22,26 +22,36 @@ std::ostream& operator<<(std::ostream& os, const DbcParser& dbcFile){
         std::cout << "<Message> " << message->getName() << " " << (*message).getId() << std::endl;
         for (auto& sig : message->getSignalsInfo()) {
             std::cout << "<Signal> " << sig.second.getName() << "  " << std::endl;
-            std::cout << "\t\tstart bit/sig size: " << sig.second.getStartBit() << "," << sig.second.getSignalSize() << std::endl;
-            std::cout << "\t\tfactor/offset: (" << sig.second.getFactor() << ", " << sig.second.getOffset() << ")" << std::endl;
-            std::cout << "\t\tmin/max: [" << sig.second.getMinValue() << "," << sig.second.getMaxValue() << "]" << std::endl;
+            std::cout << "\t\tStart bit/Sig size: " << sig.second.getStartBit() << "," << sig.second.getSignalSize() << std::endl;
+            std::cout << "\t\tFactor/Offset: (" << sig.second.getFactor() << ", " << sig.second.getOffset() << ")" << std::endl;
+            std::cout << "\t\tMin/Max: [" << sig.second.getMinValue() << "," << sig.second.getMaxValue() << "]" << std::endl;
             if (sig.second.getByteOrder() == ByteOrder::Intel) {
                 std::cout << "\t\tINTEL" << std::endl;
             }
             else {
                 std::cout << "\t\tMOTO" << std::endl;
             }
-            if (sig.second.getValueTypes() == ValueType::Unsigned) {
-                std::cout << "\t\tUNSIGNED" << std::endl;
-            }
-            else {
-                std::cout << "\t\tSIGNED" << std::endl;
+            switch (sig.second.getValueTypes()) {
+                case ValueType::Unsigned:
+                    std::cout << "\t\tUNSIGNED" << std::endl;
+                    break;
+                case ValueType::Signed:
+                    std::cout << "\t\tSIGNED" << std::endl;
+                    break;
+                case ValueType::IeeeFloat:
+                    std::cout << "\t\tIEEE Float" << std::endl;
+                    break;
+                case ValueType::IeeeDouble:
+                    std::cout << "\t\tIEEE Double" << std::endl;
+                    break;
+                default:
+                    break;
             }
             if (sig.second.getUnit() != "") {
                 std::cout << "\t\t" << sig.second.getUnit() << std::endl;
             }
             if (sig.second.getInitialValue().has_value()) {
-                std::cout << "\t\tinitial value: " << sig.second.getInitialValue().value() << std::endl;
+                std::cout << "\t\tInitial value: " << sig.second.getInitialValue().value() << std::endl;
             }
             std::cout << std::endl;
         }
@@ -88,7 +98,7 @@ void DbcParser::loadAndParseFromFile(std::istream& in) {
 				messageLibrary_iterator messages_itr = messageLibrary.find(messageId);
 				if (messages_itr != messageLibrary.end()) {
 					// Search for signals to store signal value description
-					messages_itr->second.parseSignalValueDescription(in);
+					messages_itr->second.parseSigValueDescription(in);
 				}
 				else {
 					throw std::invalid_argument("Parse Failed. Cannot find message (ID: "
@@ -134,7 +144,7 @@ void DbcParser::loadAndParseFromFile(std::istream& in) {
                     in >> messageId;
                     messageLibrary_iterator messages_itr = messageLibrary.find(messageId);
                     if (messages_itr != messageLibrary.end()) {
-                        messages_itr->second.parseSignalInitialValue(in);
+                        messages_itr->second.parseSigInitialValue(in);
                     }
                     else {
                         throw std::invalid_argument("Parse Failed. Cannot find message (ID: "
@@ -142,6 +152,19 @@ void DbcParser::loadAndParseFromFile(std::istream& in) {
                                                     + ") for a given signal value description.");
                     }
                 }
+            }
+        }
+        else if (lineInitial == "SIG_VALTYPE_") {
+            unsigned int messageId;
+            in >> messageId;
+            messageLibrary_iterator messages_itr = messageLibrary.find(messageId);
+            if (messages_itr != messageLibrary.end()) {
+                messages_itr->second.parseAdditionalSigValueType(in);
+            }
+            else {
+                throw std::invalid_argument("Parse Failed. Cannot find message (ID: "
+                                            + std::to_string(messageId)
+                                            + ") for a given signal value type attribute.");
             }
         }
 		else {
