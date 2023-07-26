@@ -40,7 +40,7 @@ int main()
 		{
 			// Encode test case
             int msgId = 0x88;
-            unsigned int MAX_MSG_LEN = 32;
+            const unsigned int MAX_MSG_LEN = 4;
 			unsigned char encodedPayload[MAX_MSG_LEN];
 			std::vector<std::pair<std::string, double> > signalsToEncode;
             unsigned int encodedMsgSize = dbcFile.encode(msgId, signalsToEncode, encodedPayload, MAX_MSG_LEN);

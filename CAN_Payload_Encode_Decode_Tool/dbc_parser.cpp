@@ -309,13 +309,13 @@ unsigned int DbcParser::encode(
         if (databaseBusType == BusType::CAN) {
             msgSize = messageLibrary[msgId].encode(signalsToEncode,
                                                    encodedPayload,
-                                                   MAX_MSG_LEN_CAN,
+                                                   encodedPayloadSize,
                                                    sigGlobalInitialValue);
         }
         else if (databaseBusType == BusType::CAN_FD) {
             msgSize = messageLibrary[msgId].encode(signalsToEncode,
                                                    encodedPayload,
-                                                   MAX_MSG_LEN_CAN_FD,
+                                                   encodedPayloadSize,
                                                    sigGlobalInitialValue);
         }
         else {

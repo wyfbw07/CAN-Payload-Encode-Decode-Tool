@@ -91,7 +91,7 @@ unsigned int Message::encode(
         if (signals_itr == signalsLibrary.end()) {
             throw std::invalid_argument("Encode failed. Cannot find signal: " + signalsToEncode[i].first + " in CAN database.");
         }
-        unsigned int rawValue = (signalsToEncode[i].second - signals_itr->second.getOffset()) / signals_itr->second.getFactor();
+        double rawValue = (signalsToEncode[i].second - signals_itr->second.getOffset()) / signals_itr->second.getFactor();
         // Check if the provided value is within its min and max range
         if (!(rawValue <= signals_itr->second.getMaxValue()
             && rawValue >= signals_itr->second.getMinValue())) {
@@ -109,7 +109,7 @@ unsigned int Message::encode(
     // Find the signal, then encode
     for (auto& sig : signalsLibrary) {
         bool hasValuetoEncode = false;
-        unsigned char encodedPayloadOfSingleSig[MAX_MSG_LEN];
+        unsigned char* encodedPayloadOfSingleSig = new unsigned char[MAX_MSG_LEN];
         // Explicitly clear and set to 0 (recessive bit) to the array before encode
         for (size_t i = 0; i < MAX_MSG_LEN; i++) {
             encodedPayloadOfSingleSig[i] = 0;
@@ -140,6 +140,7 @@ unsigned int Message::encode(
         for(size_t i = 0; i < MAX_MSG_LEN; i++){
             encodedPayload[i] |= encodedPayloadOfSingleSig[i];
         }
+        delete [] encodedPayloadOfSingleSig;
     }
     return messageSize;
 }

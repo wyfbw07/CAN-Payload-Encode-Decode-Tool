@@ -13,7 +13,17 @@ extern "C" {
 #endif
 
 #include <stdio.h>
+#include <ctype.h>
+#include <stdarg.h>
+#include <string.h>
+#include <stdint.h>
+#include <inttypes.h>
 
+// Various bits for floating point types--varies for different architectures
+typedef float float32_t;
+typedef double float64_t;
+
+#define unpack754_64(i) (unpack754((i), 64, 11))
 // macros for packing floats and doubles:
 #define pack754_32(f) (pack754((f), 32, 8))
 #define pack754_64(f) (pack754((f), 64, 11))

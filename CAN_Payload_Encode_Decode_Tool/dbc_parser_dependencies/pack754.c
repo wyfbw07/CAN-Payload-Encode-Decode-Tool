@@ -7,22 +7,6 @@
 //
 
 #include "pack754.h"
-#include <stdio.h>
-#include <ctype.h>
-#include <stdarg.h>
-#include <string.h>
-#include <stdint.h>
-#include <inttypes.h>
-
-// Various bits for floating point types--varies for different architectures
-typedef float float32_t;
-typedef double float64_t;
-
-// Macros for packing floats and doubles:
-#define pack754_32(f) (pack754((f), 32, 8))
-#define pack754_64(f) (pack754((f), 64, 11))
-#define unpack754_32(i) (unpack754((i), 32, 8))
-#define unpack754_64(i) (unpack754((i), 64, 11))
 
 // Pack a floating point number into IEEE-754 format
 uint64_t pack754(long double f, unsigned bits, unsigned expbits)
@@ -42,7 +26,7 @@ uint64_t pack754(long double f, unsigned bits, unsigned expbits)
     while (fnorm < 1.0) { fnorm *= 2.0; shift--; }
     fnorm = fnorm - 1.0;
     // calculate the binary form (non-float) of the significand data
-    significand = fnorm * ((1LL << significandbits) + 0.5f);
+    significand = (long long)(fnorm * ((1LL << significandbits) + 0.5f));
     // get the biased exponent
     exp = shift + ((1 << (expbits - 1)) - 1); // shift + bias
     // return the final answer
@@ -58,7 +42,7 @@ long double unpack754(uint64_t i, unsigned bits, unsigned expbits)
     unsigned bias;
     unsigned significandbits = bits - expbits - 1; // -1 for sign bit
     // pull the significand
-    result = (i & ((1LL << significandbits) - 1)); // mask
+    result = (long double)(i & ((1LL << significandbits) - 1)); // mask
     result /= (1LL << significandbits); // convert back to float
     result += 1.0f; // add the one back on
     // deal with the exponent

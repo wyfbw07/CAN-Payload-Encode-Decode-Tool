@@ -122,7 +122,7 @@ void Signal::encodeSignal(const double physicalValue,
         rawValue = pack754_32((physicalValue - offset) / factor);
     }
     else {
-        rawValue = (physicalValue - offset) / factor;
+        rawValue = static_cast<int64_t>((physicalValue - offset) / factor);
     }
     uint8_t* rawPayload = (uint8_t*)&rawValue;
     if (sigByteOrder == ByteOrder::Intel) { // Intel

@@ -15,8 +15,8 @@
 #include <unordered_map>
 #include "dbc_parser_dependencies/message.hpp"
 
-unsigned short MAX_MSG_LEN_CAN = 8;
-unsigned short MAX_MSG_LEN_CAN_FD = 64;
+constexpr unsigned short MAX_MSG_LEN_CAN = 8;
+constexpr unsigned short MAX_MSG_LEN_CAN_FD = 64;
 
 enum class BusType {
     NotSet,

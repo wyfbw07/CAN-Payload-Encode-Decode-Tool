@@ -15,7 +15,6 @@
 #include <unordered_map>
 #include "dbc_parser_helper.hpp"
 
-unsigned short maxMsgLen = 8;   // Can be changed based on bus type
 constexpr int MAX_BIT_INDEX_uint64_t = (sizeof(uint64_t) * CHAR_BIT) - 1;
 
 enum class ByteOrder {
