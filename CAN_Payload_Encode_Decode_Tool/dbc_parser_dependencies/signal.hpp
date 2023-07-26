@@ -13,8 +13,9 @@
 #include <iosfwd>
 #include <optional>
 #include <unordered_map>
+#include "dbc_parser_helper.hpp"
 
-constexpr int MAX_MSG_LEN = 8;
+unsigned short maxMsgLen = 8;   // Can be changed based on bus type
 constexpr int MAX_BIT_INDEX_uint64_t = (sizeof(uint64_t) * CHAR_BIT) - 1;
 
 enum class ByteOrder {
@@ -55,8 +56,12 @@ public:
     void setInitialValue(const double& initialValue) { this->initialValue = initialValue; }
     void setSigValueType(const int sigValueTypeIdentifier);
     // Decode/Encode
-	double decodeSignal(const unsigned char rawPayload[MAX_MSG_LEN], const unsigned int messageSize);
-	uint64_t encodeSignal(const double& physicalValue);
+	double decodeSignal(unsigned char const rawPayload[],
+                        unsigned short const MAX_MSG_LEN,
+                        unsigned int const messageSize);
+	void encodeSignal(const double physicalValue,
+                          unsigned char encodedPayload[],
+                          unsigned short const MAX_MSG_LEN);
 	std::istream& parseSignalValueDescription(std::istream& in);
 	// Operator overload, allows parsing of signals info
 	friend std::istream& operator>>(std::istream& in, Signal& sig);

@@ -11,7 +11,7 @@
 
 int main()
 {
-	int operationChoice = 3;
+	int operationChoice = 2;
 	// Create a class to store DBC info
 	DbcParser dbcFile;
 	try {
@@ -25,10 +25,10 @@ int main()
 		case 1:
 		{
 			// Decode
-			int dlc = 8;
-			int msgId = 258;
-            unsigned char rawPayload[8] = { 0x2d, 0xff, 0xc8, 0x0f, 0x0, 0x0, 0x0, 0x0 };
-			std::unordered_map<std::string, double> result = dbcFile.decode(msgId, rawPayload, dlc);
+			int msgSize = 32;
+            int msgId = 0x88;
+            unsigned char rawPayload[] = { 0x0, 0x10, 0x48, 0x7e, 0x5c, 0x80, 0x0, 0x0};
+			std::unordered_map<std::string, double> result = dbcFile.decode(msgId, msgSize, rawPayload);
 			// Print decoded message info
 			std::cout << "Decoded signal values: \n";
 			for (auto& decodedSig : result) {
@@ -38,31 +38,16 @@ int main()
 		break;
 		case 2:
 		{
-			// Decode and show decoded value of requested signal only
-			int dlc = 8;
-			int msgId = 258;
-			unsigned char rawPayload[8] = { 0x2d, 0xff, 0xc8, 0x0f, 0x0, 0x0, 0x0, 0x0 };
-			std::string sigName = "EngSpeed";
-			double decodedValue = 0;
-			decodedValue = dbcFile.decodeSignalOnRequest(msgId, rawPayload, dlc, sigName);
-			std::cout << "Decoded signal value: " << decodedValue << '\n';
-		}
-		break;
-		case 3:
-		{
 			// Encode test case
-			int msgId = 258;
-			unsigned int encodedDlc = 0;
-			unsigned char encodedPayload[8];
+            int msgId = 0x88;
+            unsigned int MAX_MSG_LEN = 32;
+			unsigned char encodedPayload[MAX_MSG_LEN];
 			std::vector<std::pair<std::string, double> > signalsToEncode;
-			signalsToEncode.push_back(std::make_pair("EngSpeed", 4040));
-			signalsToEncode.push_back(std::make_pair("PetrolLevel", 255));
-			signalsToEncode.push_back(std::make_pair("EngTemp", 90));
-			encodedDlc = dbcFile.encode(msgId, signalsToEncode, encodedPayload);
+            unsigned int encodedMsgSize = dbcFile.encode(msgId, signalsToEncode, encodedPayload, MAX_MSG_LEN);
 			// Print results
-			std::cout << "Encoded message size: " << encodedDlc << '\n';
+			std::cout << "Encoded message size: " << encodedMsgSize << '\n';
 			std::cout << "Display encoded payload as array (leftmost is [0]): ";
-			for (short i = 0; i < 8; i++) {
+			for (short i = 0; i < MAX_MSG_LEN; i++) {
 				printf("%x ", encodedPayload[i]);
 			}
 			std::cout << std::endl;

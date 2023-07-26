@@ -9,11 +9,8 @@
 #include <iomanip>
 #include <sstream>
 #include <algorithm>
-#include <stdio.h>
 #include "signal.hpp"
 #include "pack754.h"
-#include <stdint.h>
-#include <inttypes.h>
 
 void Signal::setSigValueType(const int sigValueTypeIdentifier) {
     if (sigValueTypeIdentifier == 1) {
@@ -50,7 +47,9 @@ std::istream& Signal::parseSignalValueDescription(std::istream& in) {
     return in;
 }
 
-double Signal::decodeSignal(const unsigned char rawPayload[MAX_MSG_LEN], const unsigned int messageSize) {
+double Signal::decodeSignal(unsigned char const rawPayload[],
+                            unsigned short const MAX_MSG_LEN,
+                            unsigned int const messageSize) {
     int64_t decodedBitSequence = 0;
     uint16_t currentBit = 0;
     // Intel
@@ -68,16 +67,14 @@ double Signal::decodeSignal(const unsigned char rawPayload[MAX_MSG_LEN], const u
         for (unsigned short bitpos = 0; bitpos < signalSize; bitpos++) {
             if (data[currentBit / CHAR_BIT] & (1 << (currentBit % CHAR_BIT))) {
                 // Add dominant bit
-                if (sigByteOrder == ByteOrder::Intel) {
-                    decodedBitSequence |= (1ULL << bitpos);
-                }
+                decodedBitSequence |= (1ULL << bitpos);
             }
             currentBit++;
         }
     }
     // Motorola MSB
     else {
-        // Translate start bit into sequential order
+        // Translate start bit into Intel
         unsigned int translationFactor = 1;
         unsigned int translationOffset = 0;
         translationFactor = (startBit / CHAR_BIT);
@@ -92,7 +89,7 @@ double Signal::decodeSignal(const unsigned char rawPayload[MAX_MSG_LEN], const u
             currentBit++;
         }
     }
-
+    
     double decodedValue = 0;
     if ((sigValueType == ValueType::Signed) && (decodedBitSequence & (1ULL << (signalSize - 1)))) {
         // Sign extend for signed signal values
@@ -100,11 +97,11 @@ double Signal::decodeSignal(const unsigned char rawPayload[MAX_MSG_LEN], const u
         decodedValue = (double)decodedBitSequence * factor + offset;
     }
     else if (sigValueType == ValueType::IeeeDouble) {
-        // Unpack a floating point number from IEEE-754 format
+        // Unpack the number from IEEE-754 format
         decodedValue = unpack754_64(decodedBitSequence) * factor + offset;
     }
     else if (sigValueType == ValueType::IeeeFloat) {
-        // Unpack a floating point number from IEEE-754 format
+        // Unpack the number from IEEE-754 format
         decodedValue = unpack754_32(decodedBitSequence) * factor + offset;
     }
     else {
@@ -113,7 +110,9 @@ double Signal::decodeSignal(const unsigned char rawPayload[MAX_MSG_LEN], const u
     return decodedValue;
 }
 
-uint64_t Signal::encodeSignal(const double& physicalValue) {
+void Signal::encodeSignal(const double physicalValue,
+                              unsigned char encodedPayload[],
+                              unsigned short const MAX_MSG_LEN) {
     int64_t rawValue = 0;
     if (sigValueType == ValueType::IeeeDouble) {
         // Pack a floating point number into IEEE-754 format
@@ -125,50 +124,40 @@ uint64_t Signal::encodeSignal(const double& physicalValue) {
     else {
         rawValue = (physicalValue - offset) / factor;
     }
-    uint16_t currentBit = 0;
-    uint64_t encodedValue = 0;
     uint8_t* rawPayload = (uint8_t*)&rawValue;
     if (sigByteOrder == ByteOrder::Intel) { // Intel
+        uint16_t currentRawBit = 0;
         // Encode
-        for (unsigned short bitpos = 0; bitpos < signalSize; bitpos++) {
+        for (unsigned short bitPosIndex = 0; bitPosIndex < signalSize; bitPosIndex++) {
             // Access the corresponding byte and make sure we are reading a bit that is 1
-            if (rawPayload[currentBit / CHAR_BIT] & (1 << (currentBit % CHAR_BIT))) {
+            if (rawPayload[currentRawBit / CHAR_BIT] & (1 << (currentRawBit % CHAR_BIT))) {
                 // Add dominant bit
-                encodedValue |= (1ULL << (bitpos + startBit));
+                uint16_t encodeBitPosition = bitPosIndex + startBit;
+                encodedPayload[encodeBitPosition / CHAR_BIT] |= (1ULL << (encodeBitPosition % CHAR_BIT));
             }
-            currentBit++;
-        }
-        // Change endianness
-        unsigned char encodedPayload[MAX_MSG_LEN];
-        for (short i = MAX_MSG_LEN - 1; i >= 0; i--) {
-            encodedPayload[i] = encodedValue % 256; // get the last byte
-            encodedValue /= 256; // get the remainder
-        }
-        encodedValue = 0;
-        for (int i = MAX_MSG_LEN; i > 0; i--) {
-            encodedValue <<= 8;
-            encodedValue |= (uint64_t)encodedPayload[i - 1];
+            currentRawBit++;
         }
     }
-    else { // Motorola MSB
-        // Translate start bit into sequential order
-        unsigned int translationFactor = 1; // Factor CANNOT default to 0
-        unsigned int translationOffset = 0;
-        unsigned int translatedstartBit = 0;
-        translationFactor = (startBit / CHAR_BIT);
-        translationOffset = (CHAR_BIT - (startBit) % CHAR_BIT - 1);
-        translatedstartBit = translationFactor * CHAR_BIT + translationOffset;
-        // Access the corresponding byte and make sure we are reading a bit that is 1
-        for (unsigned short bitpos = 0; bitpos < signalSize; bitpos++) {
-            if (rawPayload[currentBit / CHAR_BIT] & (1 << (currentBit % CHAR_BIT))) {
-                // Add dominant bit
-                encodedValue |= (1ULL << (bitpos + (MAX_BIT_INDEX_uint64_t - (translatedstartBit + signalSize - 1))));
-                // std::cout << " " << std::bitset<64>(encodedValue) << std::endl;
+    else { // Motorola Forward MSB
+        // Translate Motorola Forward MSB start bit into Motorola Sequential start bit
+        unsigned int transFactor = (startBit / CHAR_BIT);
+        unsigned int transOffset = (CHAR_BIT - startBit % CHAR_BIT - 1);
+        unsigned int translatedstartBit = transFactor * CHAR_BIT + transOffset;
+        uint16_t currentRawBit = signalSize - 1;
+        for (unsigned short bitPosIndex = 0; bitPosIndex < signalSize; bitPosIndex++) {
+            // Access the corresponding byte and make sure we are reading a bit that is 1
+            if (rawPayload[currentRawBit / CHAR_BIT] & (1 << (currentRawBit % CHAR_BIT))) {
+                // Translate back from Motorola Sequential to Motorola MSB
+                uint16_t encodeBitPosition = bitPosIndex + translatedstartBit;
+                unsigned int transBckFactor = encodeBitPosition / CHAR_BIT;
+                unsigned int transBckOffset = encodeBitPosition - ((transBckFactor) * 8 - 1) - 1;
+                unsigned int translatedBitPos = (((transBckFactor + 1) * CHAR_BIT) - 1) - transBckOffset;
+                // Write the bit into array
+                encodedPayload[translatedBitPos / CHAR_BIT] |= (1ULL << (translatedBitPos % CHAR_BIT));
             }
-            currentBit++;
+            currentRawBit--;
         }
     }
-    return encodedValue;
 }
 
 std::istream& operator>>(std::istream& in, Signal& sig) {
@@ -181,7 +170,7 @@ std::istream& operator>>(std::istream& in, Signal& sig) {
         sig.sigSignalType = SignalType::Multiplexed;
         // in >> rawString; // Comment the exception and uncomment this line if you still want to proceed.
         throw std::invalid_argument("Parse failed. Signal \"" + sig.name + "\" may not be a normal signal."
-            + " Note: This tool does not currently support parsing multiplexer and multiplexed signals.");
+            " Note: This tool does not currently support parsing multiplexer and multiplexed signals.");
     }
     else {
         sig.sigSignalType = SignalType::Normal;
@@ -194,27 +183,21 @@ std::istream& operator>>(std::istream& in, Signal& sig) {
     // Read signal byte order
     short rawByteOrderValue;
     in >> rawByteOrderValue;
-    // 0=big endian, 1=little endian
-    if (rawByteOrderValue == 0) {
-        sig.sigByteOrder = ByteOrder::Motorola;
-    }
-    else if (rawByteOrderValue == 1) {
-        sig.sigByteOrder = ByteOrder::Intel;
-    }
+    // (0 = big endian, 1 = little endian)
+    if (rawByteOrderValue == 0) { sig.sigByteOrder = ByteOrder::Motorola; }
+    else if (rawByteOrderValue == 1) { sig.sigByteOrder = ByteOrder::Intel; }
     else {
-        throw std::invalid_argument("Parse failed. Unable to parse byte order of signal \"" + sig.name + "\".");
+        throw std::invalid_argument("Parse failed. Unable to parse byte order "
+                                    "of signal \"" + sig.name + "\".");
     }
     // Read value type
     char rawChar;
     in >> rawChar;
-    if (rawChar == '+') {
-        sig.sigValueType = ValueType::Unsigned;
-    }
-    else if (rawChar == '-') {
-        sig.sigValueType = ValueType::Signed;
-    }
+    if (rawChar == '+') { sig.sigValueType = ValueType::Unsigned; }
+    else if (rawChar == '-') { sig.sigValueType = ValueType::Signed; }
     else {
-        throw std::invalid_argument("Parse failed. Unable to parse value type of signal \"" + sig.name + "\".");
+        throw std::invalid_argument("Parse failed. Unable to parse value type "
+                                    "of signal \"" + sig.name + "\".");
     }
     // Read factor and offset
     in.ignore(2);

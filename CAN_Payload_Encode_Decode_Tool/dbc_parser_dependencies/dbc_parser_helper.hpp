@@ -8,22 +8,36 @@
 #ifndef dbc_parser_helper_h
 #define dbc_parser_helper_h
 
-#include <stdio.h>
-#include <ctype.h>
-#include <stdarg.h>
-#include <string.h>
-#include <stdint.h>
-#include <inttypes.h>
 #include <algorithm>
 #include <sstream>
 #include <string>
+
+// Template of variables that can be set only once
+template <typename T, typename Counter = unsigned char>
+class SetOnce {
+public:
+    SetOnce(const T& initval = T(), const Counter& initcount = 1):
+        val(initval), counter(initcount) {}
+    SetOnce(const SetOnce&) = default;
+    SetOnce<T, Counter>& operator=(const T& newval) {
+        if (counter) {
+            --counter;
+            val = newval;
+            return *this;
+        }
+        else throw "Variable can't be set more than once.";
+    }
+    operator const T&() const { return val; } // "getter"
+protected:
+    T val;
+    Counter counter;
+};
 
 namespace utils {
 
     // A special version of trim function that removes any leading and trailling white spaces
     // and also removes all occurrences of new line and tab characters
-    inline std::string& trim(std::string& str)
-    {
+    inline std::string& trim(std::string& str) {
         str.erase(str.find_last_not_of(' ') + 1);   //suffixing spaces
         str.erase(0, str.find_first_not_of(' '));   //prefixing spaces
         str.erase(remove(str.begin(), str.end(), '\t'), str.end());
