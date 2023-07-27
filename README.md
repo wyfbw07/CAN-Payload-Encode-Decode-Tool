@@ -1,4 +1,10 @@
-#  Payload Encoder and Decoder based on CAN Database (DBC) File
+# Payload Encoder and Decoder based on CAN Database (DBC) File
+
+A C/C++ program that can parse DBC files, and decode or encode message payloads.
+
+The parser supports CAN and CAN FD.
+
+The parser does not currently support parsing multiplexer and multiplexed signals.
 
 
 
@@ -9,6 +15,8 @@
 Open the .xcodeproj project file, hit Build (Cmd+B).
 
 No arguments is required to run. Edit properties in main to try this tool.
+
+
 
 ### On Other Operating Systems
 
@@ -22,6 +30,68 @@ This tool uses exceptions to eraise errors. As a result, running and calling fun
 
 
 
+## TL;DR
+
+### Parse and Decode
+
+```c++
+// Create a class instance to store DBC info
+DbcParser dbcFile
+try {
+        // Load file from path. Parse and store the content
+        dbcFile.parse("/Users/FilePath/exampleCAN_Medium.dbc");
+        
+        // Optional: Display DBC info
+        std::cout << dbcFile;
+        
+        // Prepare data
+        unsigned long msgId = 258;
+        const unsigned int msgSize = 8;
+        unsigned char rawPayload[] = {0x2d, 0xff, 0xc8, 0x0f, 0x0, 0x0, 0x0, 0x0};
+        
+        // Decode message payload
+        std::unordered_map<std::string, double> result;
+        result = dbcFile.decode(msgId, msgSize, rawPayload);
+        // >>> {"Signal_1": 1234.5, "Signal_2": 0, "Signal_3": 12}
+}
+catch (std::invalid_argument& err) {
+		std::cout << "[Exception catched] " << err.what() << '\n';
+}
+```
+
+### Parse and Encode
+
+```c++
+// Create a class instance to store DBC info
+DbcParser dbcFile;
+try {
+        // Load file from path. Parse and store the content
+        dbcFile.parse("/Users/FilePath/exampleCAN_Medium.dbc");
+        
+        // Optional: Display DBC info
+        std::cout << dbcFile;
+        
+        // Prepare data
+        unsigned long msgId = 258;
+        std::vector<std::pair<std::string, double> > signalsToEncode;
+        signalsToEncode.push_back(std::make_pair("EngSpeed", 4040));
+        signalsToEncode.push_back(std::make_pair("PetrolLevel", 255));
+        signalsToEncode.push_back(std::make_pair("EngTemp", 90));
+        
+        // Encode message payload
+        const unsigned int MAX_MSG_LEN = 32;
+        unsigned char encodedPayload[MAX_MSG_LEN];
+        unsigned int encodedMsgSize = dbcFile.encode(msgId, signalsToEncode, encodedPayload, MAX_MSG_LEN);
+        // >>> encodedMsgSize: 4
+        // >>> rawPayload: {0x2d, 0xff, 0xc8, 0x0f, 0x0, 0x0, 0x0, 0x0};
+}
+catch (std::invalid_argument& err) {
+        std::cout << "[Exception catched] " << err.what() << '\n';
+}
+```
+
+
+
 ## Function Calls
 
 ### Load and Parse DBC File
@@ -30,21 +100,36 @@ This tool uses exceptions to eraise errors. As a result, running and calling fun
 bool DbcParser::parse(const std::string& filePath);
 ```
 
-| About this function | Description                                                  |
-| :------------------ | :----------------------------------------------------------- |
-| Use case            | To load and parse a DBC file, given the file path in string  |
-| Return value        | A bool to indicate whether parsing succeeds (true) or not (false) |
+#### Use Case
 
-Sample usage of this function:
+To load and parse a DBC file, given the file path in string.
+
+#### Input Parameters
+
+**filePath**
+
+The file path of the dbc file.
+
+#### Return value
+
+Returns a bool to indicate whether parsing succeeds (true) or not (false).
+
+#### Sample usage of this function
 
 ```c++
 DbcParser dbcFile;
-dbcFile.parse("/Users/filelocation/XVehicle.dbc");
+dbcFile.parse("/Users/FilePath/exampleCAN_Medium.dbc");
 ```
 
-A instance of the class DbcParser must be created first, and use the parse function to load and parse the DBC file. All messages and signals info will then be stored. You cannot decode or encode a messsage before parsing the DBC file.
+#### Description
 
-Again, <u>this function can be called ONLY once.</u> It does not allow repeated calls of this function. There is little use cases that you would want to re-parse the file. However if you do want to re-parse, destroy the existing class instance and create a new one to parse again.
+A instance of the class DbcParser must be created first, and use the parse function to load and parse the DBC file. All messages and signals info will then be stored. You can NOT decode or encode a messsage before parsing the DBC file.
+
+Repeated calls of this function are not allowed and will be ignored. There is little use cases that you would want to re-parse the file. If you do want to re-parse, destroy the existing class instance and create a new one to parse again.
+
+The parser supports CAN and CAN FD.
+
+The parser does not currently support parsing multiplexer and multiplexed signals.
 
 For message classes, these information will be parsed: 
 - Message name
@@ -60,12 +145,21 @@ For signal classes, these information will be parsed:
 - Signal size (data length)
 - Factor
 - Offset
+- Initial value
 - Maximum value
 - Minimum value
-- Byte order (* 0=big endian, 1=little endian *)
-- Value type (* +=unsigned, -=signed *)
+- Byte order (Intel, Motorola)
+- Value type (Signed, Unsigned, IEEE Float, IEEE Double)
+- Signal type (Normal, Multiplexed)
 - Receivers (node name)
 - Signal value descriptions
+
+For attributes, these will be parsed: 
+
+- BA_DEF_ SG_ "GenSigStartValue"
+- BA_DEF_DEF_ "GenSigStartValue"
+- BA_ "BusType"
+- BA_ "GenSigStartValue" SG_
 
 
 
@@ -75,96 +169,125 @@ For signal classes, these information will be parsed:
 friend std::ostream& operator<<(std::ostream& os, const DbcParser& dbcFile);
 ```
 
-| About this function | Description                                                  |
-| :------------------ | :----------------------------------------------------------- |
-| Use case            | To display all message and signal info in the CAN database File |
-| Return value        | std::cout in terminal                                        |
+#### Use Case
 
-Sample usage of this function:
+To display all message and signal info in the CAN database File.
+
+#### Input Parameters
+
+**dbcFile**
+
+A DbcParser class instance that has already parsed an DBC file.
+
+#### Return value
+
+Output stream
+
+#### Sample usage of this function
 
 ```c++
 std::cout << dbcFile;
 ```
 
+#### Description
+
 Display DBC file info once a DBC file is loaded and parsed. Messages and signals info would appear in terminal.
 
 
 
-### Decode an Entire Message
+### Decode a Message Payload
 
 ```c++
-std::unordered_map<std::string, double> DbcParser::decode(unsigned long msgId, unsigned char payLoad[], unsigned int dlc);
+std::unordered_map<std::string, double> DbcParser::decode(
+    unsigned long msgId,
+    unsigned int msgSize,
+    unsigned char payload[]
+);
 ```
 
-| About this function | Description                                                  |
-| :------------------ | :----------------------------------------------------------- |
-| Use case            | To decode a message payload                                  |
-| Input parameters    | (Message ID in decimal, An array of message payload, Message size) |
-| Return value        | std::unordered_map<Signal name, decoded value>               |
+#### Use Case
 
-Sample usage of this function:
+To decode a message payload.
+
+#### Input Parameters
+
+**msgId**
+
+The message's CAN-ID.
+
+**msgSize**
+
+Specifies the size of the message in bytes.
+
+**payload**
+
+The message payload that need to be decoded.
+
+#### Return value
+
+Returns an unordered map: <Signal name, decoded value>, where the first is signal name, and the second is the decoded value for each signal. 
+
+#### Sample usage of this function
 
 ```c++
 // Prepare data
-unsigned char rawPayload[8] = {0xe8, 0x0, 0x0, 0x0, 0x0, 0x0};
+unsigned char rawPayload[] = {0xe8, 0x0, 0x0, 0x0, 0x0, 0x0};
 // Decode
-dbcFile.decode(168, rawPayload, 6);
+std::unordered_map<std::string, double> result = dbcFile.decode(168, 4, rawPayload);
 ```
 
-The function will return an unordered map: <Signal name, decoded value>, where the first is signal name, and the second is the decoded value for each signal. The function checks input payload length, returns decode result, and no longer prints decoded information by default.
 
 
-
-### Decode and Show Specific Signal Value Under a Message
+### Encode a Message Payload
 
 ```c++
-double DbcParser::decodeSignalOnRequest(unsigned long msgId, unsigned char payLoad[], unsigned int dlc, std::string sigName);
+unsigned int DbcParser::encode(
+    unsigned long msgId,
+    std::vector<std::pair<std::string, double> >& signalsToEncode,
+    unsigned char encodedPayload[],
+    unsigned int encodedPayloadSize
+);
 ```
 
-| About this function | Description                                                  |
-| :------------------ | :----------------------------------------------------------- |
-| Use case            | To decode a specific signal under a message payload          |
-| Input parameters    | (Message ID, An array of message payload, Message size, Signal name) |
-| Return value        | A decoded value of type double                               |
+#### Use Case
 
-Sample usage of this function:
+To encode a CAN message payload
 
-```c++
-// Prepare data
-unsigned char rawPayload[8] = {0xe8, 0x0, 0x0, 0x0, 0x0, 0x0};
-// Decode
-dbcFile.decodeSignalOnRequest(168, payLoad, 6, "EngineTemp");
-```
+#### Input Parameters
 
-Call this function to decode an specific signal under one message. The function will return the decoded value for that signal. The function now checks input payload length, returns decode result, and no longer prints decoded information by default.
+**msgId**
 
+The message's CAN-ID.
 
+**signalsToEncode**
 
-### Encode a Message
+An vector of pairs that contains signal names and physical values. In each pair the first is signal name, and the second is the physical value for that signal. 
 
-```c++
-unsigned int DbcParser::encode(unsigned long msgId,
-                               std::vector<std::pair<std::string, double> > signalsToEncode,
-                               unsigned char encodedPayload[MAX_MSG_LEN])
-```
+**encodedPayloadSize**
 
-| About this function | Description                                                  |
-| :------------------ | :----------------------------------------------------------- |
-| Use case            | To encode a CAN message payload                              |
-| Input parameters    | (Message ID, An vector of pair of signal name and physical value, A fixed size 8 slots array that contains the encoded payload) |
-| Return value        | Message size of the encoded payload                          |
+Specifies the max size of the encoded message payload. For classical CAN this will be 8. For CAN FD this will be 64. Provide any other size values would still work, but the encoded message payload could be truncated or prolonged.
 
-Sample usage of this function:
+#### Output Parameters
+
+**encodedPayload**
+
+Contains the encoded message payload.
+
+#### Return value
+
+Returns an unsigned int that specifies the encoded message size.
+
+#### Sample usage of this function
 
 ```c++
 // Prepare data
-unsigned int encodedDlc = 0;
-unsigned char encodedPayload[8];
+unsigned long msgId = 258;
 std::vector<std::pair<std::string, double> > signalsToEncode;
 signalsToEncode.push_back(std::make_pair("EngSpeed", 50));
-signalsToEncode.push_back(std::make_pair("EngSpeed_Second", 1535));
 // Encode
-encodedDlc = dbcFile.encode(168, signalsToEncode, encodedPayload);
+const unsigned int MAX_MSG_LEN = 2;
+unsigned char encodedPayload[MAX_MSG_LEN];
+unsigned int encodedMsgSize = dbcFile.encode(msgId, signalsToEncode, encodedPayload, MAX_MSG_LEN);
 ```
 
 The function encodes one or more signals at once into a single message payload. The fixed size encodedPayload array contains the encoded payload once the function has been called. An additional value is returned to specify the message size of the encoded payload.
@@ -183,5 +306,5 @@ Reference PDF for CAN bus [DBC File Format Documentation](http://mcu.so/Microcon
 
 ## What's New
 
-- This tool now supports encoding CAN bus messages.  One or more signals can be encoded at once into a single message payload. 
+- CAN FD support.
 
