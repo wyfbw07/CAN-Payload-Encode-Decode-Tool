@@ -20,8 +20,10 @@ void Signal::setSigValueType(const int sigValueTypeIdentifier) {
         sigValueType = ValueType::IeeeDouble;
     }
     else {
-        throw std::invalid_argument("Parse failed. Undefined signal value type identifier for signal \""
-            + name + "\".");
+        throw std::invalid_argument("Parse failed. "
+            "Undefined signal value type identifier for signal \""
+            + name
+            + "\".");
     }
 }
 
@@ -41,15 +43,19 @@ std::istream& Signal::parseSignalValueDescription(std::istream& in) {
             valueDescriptions.insert(std::make_pair(sigValue, rawDescription));
         }
         else {
-            throw std::invalid_argument("Parse failed. Found duplicated value description of signal \"" + name + "\".");
+            throw std::invalid_argument("Parse failed. "
+                "Found duplicated value description of signal \""
+                + name
+                + "\".");
         }
     }
     return in;
 }
 
-double Signal::decodeSignal(unsigned char const rawPayload[],
-                            unsigned short const MAX_MSG_LEN,
-                            unsigned int const messageSize) {
+double Signal::decodeSignal(
+    unsigned char const rawPayload[],
+    unsigned short const MAX_MSG_LEN,
+    unsigned int const messageSize) {
     int64_t decodedBitSequence = 0;
     uint16_t currentBit = 0;
     // Intel
@@ -89,7 +95,7 @@ double Signal::decodeSignal(unsigned char const rawPayload[],
             currentBit++;
         }
     }
-    
+
     double decodedValue = 0;
     if ((sigValueType == ValueType::Signed) && (decodedBitSequence & (1ULL << (signalSize - 1)))) {
         // Sign extend for signed signal values
@@ -110,9 +116,10 @@ double Signal::decodeSignal(unsigned char const rawPayload[],
     return decodedValue;
 }
 
-void Signal::encodeSignal(const double physicalValue,
-                              unsigned char encodedPayload[],
-                              unsigned short const MAX_MSG_LEN) {
+void Signal::encodeSignal(
+    const double physicalValue,
+    unsigned char encodedPayload[],
+    unsigned short const MAX_MSG_LEN) {
     int64_t rawValue = 0;
     if (sigValueType == ValueType::IeeeDouble) {
         // Pack a floating point number into IEEE-754 format
@@ -143,7 +150,7 @@ void Signal::encodeSignal(const double physicalValue,
         unsigned int transFactor = (startBit / CHAR_BIT);
         unsigned int transOffset = (CHAR_BIT - startBit % CHAR_BIT - 1);
         unsigned int translatedstartBit = transFactor * CHAR_BIT + transOffset;
-        uint16_t currentRawBit = signalSize - 1;
+        uint16_t currentRawBit = signalSize - 1; // Start from MSB
         for (unsigned short bitPosIndex = 0; bitPosIndex < signalSize; bitPosIndex++) {
             // Access the corresponding byte and make sure we are reading a bit that is 1
             if (rawPayload[currentRawBit / CHAR_BIT] & (1 << (currentRawBit % CHAR_BIT))) {
@@ -188,7 +195,7 @@ std::istream& operator>>(std::istream& in, Signal& sig) {
     else if (rawByteOrderValue == 1) { sig.sigByteOrder = ByteOrder::Intel; }
     else {
         throw std::invalid_argument("Parse failed. Unable to parse byte order "
-                                    "of signal \"" + sig.name + "\".");
+            "of signal \"" + sig.name + "\".");
     }
     // Read value type
     char rawChar;
@@ -197,7 +204,7 @@ std::istream& operator>>(std::istream& in, Signal& sig) {
     else if (rawChar == '-') { sig.sigValueType = ValueType::Signed; }
     else {
         throw std::invalid_argument("Parse failed. Unable to parse value type "
-                                    "of signal \"" + sig.name + "\".");
+            "of signal \"" + sig.name + "\".");
     }
     // Read factor and offset
     in.ignore(2);

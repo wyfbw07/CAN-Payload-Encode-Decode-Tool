@@ -24,7 +24,7 @@ std::istream& Message::parseSigInitialValue(std::istream& in) {
     }
     else {
         throw std::invalid_argument("Parse failed during parsing signal's initial value. "
-                                    "Cannot find signal: " + sigName + " in CAN database.");
+            "Cannot find signal: " + sigName + " in CAN database.");
     }
     return in;
 }
@@ -39,7 +39,7 @@ std::istream& Message::parseSigValueDescription(std::istream& in) {
     }
     else {
         throw std::invalid_argument("Parse failed during parsing signal value description. "
-                                    "Cannot find signal: " + sigName + " in CAN database.");
+            "Cannot find signal: " + sigName + " in CAN database.");
     }
     return in;
 }
@@ -56,7 +56,7 @@ std::istream& Message::parseAdditionalSigValueType(std::istream& in) {
     }
     else {
         throw std::invalid_argument("Parse failed during parsing signal's value type. "
-                                    "Cannot find signal: " + sigName + " in CAN database.");
+            "Cannot find signal: " + sigName + " in CAN database.");
     }
     return in;
 }
@@ -67,12 +67,14 @@ std::unordered_map<std::string, double> Message::decode(
     unsigned int const msgSize) {
     // Check input payload length
     if (msgSize != messageSize) {
-        throw std::invalid_argument("Decode failed. The data length of the input payload does not match with DBC info.");
+        throw std::invalid_argument("Decode failed. "
+            "The data length of the input payload does not match with DBC info.");
     }
     // Decode
     std::unordered_map<std::string, double> sigValues;
     for (auto& it : signalsLibrary) {
-        sigValues.insert(std::make_pair(it.second.getName(), it.second.decodeSignal(rawPayload, MAX_MSG_LEN, messageSize)));
+        sigValues.insert(std::make_pair(it.second.getName(),
+            it.second.decodeSignal(rawPayload, MAX_MSG_LEN, messageSize)));
     }
     return sigValues;
 }
@@ -89,19 +91,22 @@ unsigned int Message::encode(
     for (unsigned short i = 0; i < signalsToEncode.size(); i++) {
         signalsLibrary_iterator signals_itr = signalsLibrary.find(signalsToEncode[i].first);
         if (signals_itr == signalsLibrary.end()) {
-            throw std::invalid_argument("Encode failed. Cannot find signal: " + signalsToEncode[i].first + " in CAN database.");
+            throw std::invalid_argument("Encode failed. Cannot find signal: "
+                + signalsToEncode[i].first
+                + " in CAN database.");
         }
         double rawValue = (signalsToEncode[i].second - signals_itr->second.getOffset()) / signals_itr->second.getFactor();
         // Check if the provided value is within its min and max range
         if (!(rawValue <= signals_itr->second.getMaxValue()
             && rawValue >= signals_itr->second.getMinValue())) {
             std::cerr << "<Warning> Trying to encode a value that is out of the min and max range of signal "
-                      << std::quoted(name) << " is not allowed. This signal will encode with its initial value: "
-                      << signals_itr->second.getInitialValue().value_or(defaultGlobalInitialValue) << '.' << std::endl;
+                << std::quoted(name) << " is not allowed. This signal will encode with its initial value: "
+                << signals_itr->second.getInitialValue().value_or(defaultGlobalInitialValue)
+                << '.' << std::endl;
             // DBC stores initial values as raw values, so convert to initial physical value
             double initialPhysicalValue = signals_itr->second.getInitialValue().value_or(defaultGlobalInitialValue)
-                                        * signals_itr->second.getFactor()
-                                        + signals_itr->second.getOffset();
+                * signals_itr->second.getFactor()
+                + signals_itr->second.getOffset();
             // Override the initial raw value
             signalsToEncode[i].second = initialPhysicalValue;
         }
@@ -120,8 +125,8 @@ unsigned int Message::encode(
                 hasValuetoEncode = true;
                 // Encode the requested value
                 sig.second.encodeSignal(signalsToEncode[i].second,
-                                        encodedPayloadOfSingleSig,
-                                        MAX_MSG_LEN);
+                    encodedPayloadOfSingleSig,
+                    MAX_MSG_LEN);
                 break;
             }
         }
@@ -129,18 +134,18 @@ unsigned int Message::encode(
         // If the signal does not have a initial value, use the global initial value
         if (!hasValuetoEncode) {
             double initialPhysicalValue = sig.second.getInitialValue().value_or(defaultGlobalInitialValue)
-                                        * sig.second.getFactor()
-                                        + sig.second.getOffset();
+                * sig.second.getFactor()
+                + sig.second.getOffset();
             // Encode with initial value
             sig.second.encodeSignal(initialPhysicalValue,
-                                    encodedPayloadOfSingleSig,
-                                    MAX_MSG_LEN);
+                encodedPayloadOfSingleSig,
+                MAX_MSG_LEN);
         }
         // Merge single result with results from other signals
-        for(size_t i = 0; i < MAX_MSG_LEN; i++){
+        for (size_t i = 0; i < MAX_MSG_LEN; i++) {
             encodedPayload[i] |= encodedPayloadOfSingleSig[i];
         }
-        delete [] encodedPayloadOfSingleSig;
+        delete[] encodedPayloadOfSingleSig;
     }
     return messageSize;
 }

@@ -20,33 +20,33 @@ std::ostream& operator<<(std::ostream& os, const DbcParser& dbcFile) {
     for (auto message : dbcFile.messagesInfo) {
         std::cout << "-------------------------------" << std::endl;
         std::cout << "<Message> "
-                  << message->getName()
-                  << " "
-                  << (*message).getId()
-                  << " "
-                  << (*message).getDlc()
-                  << std::endl;
+            << message->getName()
+            << " "
+            << (*message).getId()
+            << " "
+            << (*message).getDlc()
+            << std::endl;
         for (auto& sig : message->getSignalsInfo()) {
             std::cout << "<Signal> "
-                      << sig.second.getName()
-                      << "  "
-                      << std::endl;
+                << sig.second.getName()
+                << "  "
+                << std::endl;
             std::cout << "\t\tStart bit/Sig size: "
-                      << sig.second.getStartBit()
-                      << ","
-                      << sig.second.getSignalSize()
-                      << std::endl;
+                << sig.second.getStartBit()
+                << ","
+                << sig.second.getSignalSize()
+                << std::endl;
             std::cout << "\t\tFactor/Offset: ("
-                      << sig.second.getFactor()
-                      << ", "
-                      << sig.second.getOffset()
-                      << ")" << std::endl;
+                << sig.second.getFactor()
+                << ", "
+                << sig.second.getOffset()
+                << ")" << std::endl;
             std::cout << "\t\tMin/Max: ["
-                      << sig.second.getMinValue()
-                      << ","
-                      << sig.second.getMaxValue()
-                      << "]"
-                      << std::endl;
+                << sig.second.getMinValue()
+                << ","
+                << sig.second.getMaxValue()
+                << "]"
+                << std::endl;
             if (sig.second.getByteOrder() == ByteOrder::Intel) {
                 std::cout << "\t\tINTEL" << std::endl;
             }
@@ -72,8 +72,8 @@ std::ostream& operator<<(std::ostream& os, const DbcParser& dbcFile) {
             }
             if (sig.second.getInitialValue().has_value()) {
                 std::cout << "\t\tInitial value: "
-                          << sig.second.getInitialValue().value()
-                          << std::endl;
+                    << sig.second.getInitialValue().value()
+                    << std::endl;
             }
             std::cout << std::endl;
         }
@@ -104,7 +104,9 @@ void DbcParser::loadAndParseFromFile(std::istream& in) {
                 messagesInfo.push_back(&(data_itr->second));
             }
             else {
-                throw std::invalid_argument("Parse Failed. Message \"" + msg.getName() + "\" has a duplicate.");
+                throw std::invalid_argument("Parse Failed. Message \""
+                    + msg.getName()
+                    + "\" has a duplicate.");
             }
         }
         // Value descriptions
@@ -210,7 +212,8 @@ void DbcParser::loadAndParseFromFile(std::istream& in) {
         else {
             // Reserved cases for parsing other info in the DBC file
         }
-        // Skip the rest of the line for uninterested data and make sure we can get a whole new line in the next iteration
+        // Skip the rest of the line for uninterested data
+        // Make sure we can get a whole new line in the next iteration
         in.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     }
     isEmptyLibrary = false;
@@ -238,7 +241,8 @@ void DbcParser::consistencyCheck() {
     if (!((sigGlobalInitialValue <= sigGlobalInitialValueMax)
         && (sigGlobalInitialValue >= sigGlobalInitialValueMin))
         && !(sigGlobalInitialValueMax == 0 && sigGlobalInitialValueMin == 0)) {
-        throw std::invalid_argument("<Consistency check> Default signal initial value is not within its min and max range.");
+        throw std::invalid_argument("<Consistency check> "
+            "Default signal initial value is not within its min and max range.");
     }
     for (auto message : messageLibrary) {
         for (auto& sig : message.second.getSignalsInfo()) {
@@ -246,7 +250,8 @@ void DbcParser::consistencyCheck() {
                 if (!((sig.second.getInitialValue().value() <= sig.second.getMaxValue())
                     && (sig.second.getInitialValue().value() >= sig.second.getMinValue()))) {
                     // Refer to attribute BA_ "GenSigStartValue" SG_ in DBC file
-                    throw std::invalid_argument("<Consistency check> Signal initial value is not within min and max range of signal \""
+                    throw std::invalid_argument("<Consistency check> "
+                        "Signal initial value is not within min and max range of signal \""
                         + sig.second.getName() + "\".");
                 }
             }
@@ -255,7 +260,8 @@ void DbcParser::consistencyCheck() {
                     && (sigGlobalInitialValue >= sig.second.getMinValue()))) {
                     // Refer to attribute BA_DEF_DEF_  "GenSigStartValue" in DBC file
                     // This value should usually be 0 to avoid this warning
-                    throw std::invalid_argument("<Consistency check> Global signal initial value is not within min and max range of signal \""
+                    throw std::invalid_argument("<Consistency check> "
+                        "Global signal initial value is not within min and max range of signal \""
                         + sig.second.getName() + "\".");
                 }
             }
@@ -268,25 +274,29 @@ std::unordered_map<std::string, double> DbcParser::decode(
     unsigned long msgId,
     unsigned int msgSize,
     unsigned char payload[]) {
-    
     std::unordered_map<std::string, double> result;
     messageLibrary_iterator data_itr_msg = messageLibrary.find(msgId);
     if (data_itr_msg == messageLibrary.end()) {
-        std::cerr << "Decode failed. No matching message found. An empty result is returned." << std::endl;
+        std::cerr << "Decode failed. "
+            << "No matching message found. "
+            << "An empty result is returned."
+            << std::endl;
     }
     else {
         if (databaseBusType == BusType::CAN) {
             result = messageLibrary[msgId].decode(payload,
-                                                  MAX_MSG_LEN_CAN,
-                                                  msgSize);
+                MAX_MSG_LEN_CAN,
+                msgSize);
         }
         else if (databaseBusType == BusType::CAN_FD) {
             result = messageLibrary[msgId].decode(payload,
-                                                  MAX_MSG_LEN_CAN_FD,
-                                                  msgSize);
+                MAX_MSG_LEN_CAN_FD,
+                msgSize);
         }
         else {
-            std::cerr << "Decode failed. Unknown bus type. An empty result is returned." << std::endl;
+            std::cerr << "Decode failed. "
+                << "Unknown bus type. An empty result is returned."
+                << std::endl;
         }
     }
     return result;
@@ -297,37 +307,37 @@ unsigned int DbcParser::encode(
     std::vector<std::pair<std::string, double> >& signalsToEncode,
     unsigned char encodedPayload[],
     unsigned int encodedPayloadSize) {
-    
+
     // Find the message and encode based on bus type
     unsigned int msgSize = 0;
     messageLibrary_iterator data_itr_msg = messageLibrary.find(msgId);
     if (data_itr_msg == messageLibrary.end()) {
         std::cerr << "Encode failed. No matching message found."
-                  << "An empty result is returned." << std::endl;
+            << "An empty result is returned." << std::endl;
     }
     else {
         if (databaseBusType == BusType::CAN) {
             msgSize = messageLibrary[msgId].encode(signalsToEncode,
-                                                   encodedPayload,
-                                                   encodedPayloadSize,
-                                                   sigGlobalInitialValue);
+                encodedPayload,
+                encodedPayloadSize,
+                sigGlobalInitialValue);
         }
         else if (databaseBusType == BusType::CAN_FD) {
             msgSize = messageLibrary[msgId].encode(signalsToEncode,
-                                                   encodedPayload,
-                                                   encodedPayloadSize,
-                                                   sigGlobalInitialValue);
+                encodedPayload,
+                encodedPayloadSize,
+                sigGlobalInitialValue);
         }
         else {
             std::cerr << "Encode failed. Unknown bus type."
-                      << "An empty result is returned." << std::endl;
+                << "An empty result is returned." << std::endl;
             return msgSize;
         }
     }
     if (msgSize > encodedPayloadSize) {
         std::cerr << "The provided array size is smaller than message size "
-                  << "and may not be enough to hold encoded values. "
-                  << "Results could be truncated." << std::endl;
+            << "and may not be enough to hold encoded values. "
+            << "Results could be truncated." << std::endl;
     }
     return msgSize;
 }

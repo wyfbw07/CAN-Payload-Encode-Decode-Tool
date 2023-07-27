@@ -12,7 +12,7 @@
 uint64_t pack754(long double f, unsigned bits, unsigned expbits)
 {
     // get this special case out of the way
-    if (f == 0.0){ return 0; }
+    if (f == 0.0) { return 0; }
     long double fnorm;
     int shift;
     long long sign, exp, significand;

@@ -26,41 +26,41 @@ enum class ValueType {
 	NotSet,
 	Signed,
 	Unsigned,
-    IeeeFloat,
-    IeeeDouble
+	IeeeFloat,
+	IeeeDouble
 };
 enum class SignalType {
-    NotSet,
-    Normal,
-    Multiplexed
+	NotSet,
+	Normal,
+	Multiplexed
 };
 
 class Signal {
 
 public:
-    
+
 	std::string getName() const { return name; }
 	std::string getUnit() const { return unit; }
 	double getFactor() const { return factor; }
 	double getOffset() const { return offset; }
 	double getMinValue() const { return minValue; }
 	double getMaxValue() const { return maxValue; }
-    unsigned int getStartBit() const { return startBit; }
-    unsigned int getSignalSize() const { return signalSize; }
-    ByteOrder getByteOrder() const { return sigByteOrder; }
-    ValueType getValueTypes() const { return sigValueType; }
-    std::optional<double> getInitialValue() const { return initialValue; }
+	unsigned int getStartBit() const { return startBit; }
+	unsigned int getSignalSize() const { return signalSize; }
+	ByteOrder getByteOrder() const { return sigByteOrder; }
+	ValueType getValueTypes() const { return sigValueType; }
+	std::optional<double> getInitialValue() const { return initialValue; }
 	// Get names of all the nodes that receives this signal
 	std::vector<std::string> getReceiversName() const { return receiversName; }
-    void setInitialValue(const double& initialValue) { this->initialValue = initialValue; }
-    void setSigValueType(const int sigValueTypeIdentifier);
-    // Decode/Encode
+	void setInitialValue(const double& initialValue) { this->initialValue = initialValue; }
+	void setSigValueType(const int sigValueTypeIdentifier);
+	// Decode/Encode
 	double decodeSignal(unsigned char const rawPayload[],
-                        unsigned short const MAX_MSG_LEN,
-                        unsigned int const messageSize);
+		unsigned short const MAX_MSG_LEN,
+		unsigned int const messageSize);
 	void encodeSignal(const double physicalValue,
-                          unsigned char encodedPayload[],
-                          unsigned short const MAX_MSG_LEN);
+		unsigned char encodedPayload[],
+		unsigned short const MAX_MSG_LEN);
 	std::istream& parseSignalValueDescription(std::istream& in);
 	// Operator overload, allows parsing of signals info
 	friend std::istream& operator>>(std::istream& in, Signal& sig);
@@ -84,13 +84,13 @@ private:
 	unsigned int startBit{};
 	// The signal_size specifies the size of the signal in bits
 	unsigned int signalSize{};
-    // The default RAW value for the signal if no value is provided upon encoding
-    std::optional<double> initialValue{};
+	// The default RAW value for the signal if no value is provided upon encoding
+	std::optional<double> initialValue{};
 	// Byte order can be either Intel (little-endian) or Motorola (Big-endian)
 	ByteOrder sigByteOrder = ByteOrder::NotSet;
 	// Value order can be either unsigned or signed
 	ValueType sigValueType = ValueType::NotSet;
-    SignalType sigSignalType = SignalType::NotSet;
+	SignalType sigSignalType = SignalType::NotSet;
 	// Names of all the nodes that receives this signal
 	std::vector<std::string> receiversName{};
 	// Signal value descriptions: define encodings for specific signal raw values

@@ -16,7 +16,7 @@
 template <typename T, typename Counter = unsigned char>
 class SetOnce {
 public:
-    SetOnce(const T& initval = T(), const Counter& initcount = 1):
+    SetOnce(const T& initval = T(), const Counter& initcount = 1) :
         val(initval), counter(initcount) {}
     SetOnce(const SetOnce&) = default;
     SetOnce<T, Counter>& operator=(const T& newval) {
@@ -27,7 +27,7 @@ public:
         }
         else throw "Variable can't be set more than once.";
     }
-    operator const T&() const { return val; } // "getter"
+    operator const T& () const { return val; } // "getter"
 protected:
     T val;
     Counter counter;

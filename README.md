@@ -1,4 +1,4 @@
-# CAN Database (DBC) Encode Decode Tool
+#  Payload Encoder and Decoder based on CAN Database (DBC) File
 
 
 
@@ -8,7 +8,7 @@
 
 Open the .xcodeproj project file, hit Build (Cmd+B).
 
-No arguments is required to run. Edit properties in main to use this tool.
+No arguments is required to run. Edit properties in main to try this tool.
 
 ### On Other Operating Systems
 
