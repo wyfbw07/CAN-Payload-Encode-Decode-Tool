@@ -251,7 +251,7 @@ unsigned int DbcParser::encode(
 
 #### Use Case
 
-To encode a CAN message payload
+To encode a CAN message payload.
 
 #### Input Parameters
 
@@ -261,7 +261,7 @@ The message's CAN-ID.
 
 **signalsToEncode**
 
-An vector of pairs that contains signal names and physical values. In each pair the first is signal name, and the second is the physical value for that signal. 
+An vector of pairs that contains signal names and physical values. In each pair the first is signal name, and the second is the physical value for that signal. Signals under the message will encode will initial values if no physical values are provided.
 
 **encodedPayloadSize**
 
